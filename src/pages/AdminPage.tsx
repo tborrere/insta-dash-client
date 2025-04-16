@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import ClientsTable from '@/components/ClientsTable';
-import AddClientDialog from '@/components/AddClientDialog';
+import ClientForm from '@/components/ClientForm';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { getAllClients } from '@/services/mockData';
@@ -19,6 +19,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 
 const AdminPage: React.FC = () => {
   const [clients, setClients] = useState<Client[]>(getAllClients());
@@ -31,8 +35,8 @@ const AdminPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleViewMetrics = (clientId: string) => {
-    // In a real app, this would navigate to a client-specific dashboard
-    // For this demo, we'll just show a toast
+    // Em uma aplicação real, você poderia querer ter uma rota específica para cada cliente
+    // Por exemplo: /clients/client_id/dashboard
     toast({
       title: "Visualizando métricas",
       description: `Redirecionando para as métricas do cliente ${clientId}...`,
@@ -65,36 +69,55 @@ const AdminPage: React.FC = () => {
     setClientToDelete(null);
   };
 
-  const handleSaveClient = (clientData: Omit<Client, 'id' | 'created_at' | 'token_status'>) => {
+  const handleSaveClient = (clientData: any) => {
+    // Em um caso real, faríamos uma chamada à API para salvar no banco de dados
+    
     if (selectedClient) {
-      // Update existing client
+      // Atualizar cliente existente
       const updatedClients = clients.map(client => 
         client.id === selectedClient.id 
           ? { 
               ...client, 
-              ...clientData 
+              ...clientData,
+              logo_url: clientData.logo ? URL.createObjectURL(clientData.logo) : client.logo_url,
             } 
           : client
       );
       setClients(updatedClients);
+      
       toast({
         title: "Cliente atualizado",
         description: "As informações do cliente foram atualizadas com sucesso.",
       });
     } else {
-      // Add new client
+      // Adicionar novo cliente
+      const logoUrl = clientData.logo ? URL.createObjectURL(clientData.logo) : undefined;
+      
       const newClient: Client = {
         id: `client${clients.length + 1}`,
-        ...clientData,
+        name: clientData.name,
+        email: clientData.email,
+        instagram_id: clientData.instagram_id,
+        instagram_token: clientData.instagram_token,
         token_status: 'valid',
         created_at: new Date().toISOString(),
+        logo_url: logoUrl,
       };
+      
       setClients([...clients, newClient]);
+      
       toast({
         title: "Cliente adicionado",
-        description: "O novo cliente foi adicionado com sucesso.",
+        description: `O novo cliente "${clientData.name}" foi adicionado com sucesso. As credenciais de acesso foram geradas.`,
       });
     }
+    
+    setIsAddClientOpen(false);
+    setSelectedClient(undefined);
+  };
+
+  const handleCloseDialog = () => {
+    setIsAddClientOpen(false);
     setSelectedClient(undefined);
   };
 
@@ -105,8 +128,8 @@ const AdminPage: React.FC = () => {
       <main className="container mx-auto py-6 px-4">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Painel Administrativo</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl font-bold text-funillab-blue">Painel Administrativo</h1>
+            <p className="text-funillab-gray">
               Gerencie os clientes e suas métricas do Instagram
             </p>
           </div>
@@ -116,7 +139,7 @@ const AdminPage: React.FC = () => {
               setSelectedClient(undefined);
               setIsAddClientOpen(true);
             }}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-funillab-blue hover:bg-funillab-blue/90"
           >
             <PlusCircle className="h-4 w-4" />
             Adicionar Cliente
@@ -134,15 +157,15 @@ const AdminPage: React.FC = () => {
       </main>
 
       {/* Add/Edit Client Dialog */}
-      <AddClientDialog 
-        isOpen={isAddClientOpen}
-        onClose={() => {
-          setIsAddClientOpen(false);
-          setSelectedClient(undefined);
-        }}
-        onSave={handleSaveClient}
-        initialData={selectedClient}
-      />
+      <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
+        <DialogContent className="sm:max-w-[700px]">
+          <ClientForm
+            initialData={selectedClient}
+            onSubmit={handleSaveClient}
+            onCancel={handleCloseDialog}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

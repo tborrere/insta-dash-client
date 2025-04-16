@@ -11,7 +11,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
-import { User, LogOut, Home, Settings, Instagram } from 'lucide-react';
+import { getClientById } from '@/services/mockData';
+import { User, LogOut, Home, Settings } from 'lucide-react';
 
 const Header: React.FC = () => {
   const { user, logout, isAdmin } = useAuth();
@@ -22,11 +23,33 @@ const Header: React.FC = () => {
     navigate('/login');
   };
 
+  const clientInfo = user?.clientId ? getClientById(user.clientId) : null;
+  const clientLogo = clientInfo?.logo_url;
+
   return (
     <header className="bg-white border-b border-gray-200 py-3 px-4 sm:px-6 flex justify-between items-center sticky top-0 z-10">
-      <div className="flex items-center gap-2">
-        <Instagram className="h-6 w-6 text-funillab-purple" />
-        <h1 className="text-xl font-semibold text-gray-800">FunilLab Metrics</h1>
+      <div className="flex items-center gap-4">
+        {/* Logo da Funil Lab para todos os usuários */}
+        <img 
+          src="/lovable-uploads/b1145979-e0b0-4c99-bfa2-760a739b778f.png" 
+          alt="Funil Lab" 
+          className="h-8 object-contain"
+        />
+        
+        {/* Logo do cliente (se existir e o usuário for um cliente) */}
+        {user?.role === 'client' && clientLogo && (
+          <div className="h-8 border-l border-gray-300 pl-4">
+            <img 
+              src={clientLogo} 
+              alt={`${clientInfo?.name} Logo`}
+              className="h-full object-contain"
+            />
+          </div>
+        )}
+        
+        {!clientLogo && !isAdmin() && (
+          <h1 className="text-xl font-semibold text-funillab-blue ml-2">Métricas do Instagram</h1>
+        )}
       </div>
 
       <div className="flex items-center">

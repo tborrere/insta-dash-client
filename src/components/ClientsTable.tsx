@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Eye, MoreHorizontal, RefreshCw, Trash2, Edit } from 'lucide-react';
+import { Eye, MoreHorizontal, RefreshCw, Trash2, Edit, Copy } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface ClientsTableProps {
@@ -54,12 +54,30 @@ const ClientsTable: React.FC<ClientsTableProps> = ({
     return new Date(dateString).toLocaleDateString('pt-BR', options);
   };
 
+  const handleCopyCredentials = (client: Client) => {
+    // Em uma aplicação real, você recuperaria a senha do cliente
+    // para um caso de demonstração, usaremos uma senha fixa
+    const text = `
+      Acesse seu painel da Funil Lab:
+      Site: https://metrics.funillab.com
+      Email: ${client.email}
+      Senha: password123
+    `;
+    
+    navigator.clipboard.writeText(text);
+    
+    toast({
+      title: "Credenciais copiadas",
+      description: "As credenciais de acesso foram copiadas para a área de transferência.",
+    });
+  };
+
   return (
     <Table>
       <TableCaption>Lista de clientes cadastrados</TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead>Nome</TableHead>
+          <TableHead>Cliente</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Instagram ID</TableHead>
           <TableHead>Status do Token</TableHead>
@@ -70,13 +88,24 @@ const ClientsTable: React.FC<ClientsTableProps> = ({
       <TableBody>
         {clients.map((client) => (
           <TableRow key={client.id}>
-            <TableCell className="font-medium">{client.name}</TableCell>
+            <TableCell className="font-medium">
+              <div className="flex items-center gap-2">
+                {client.logo_url && (
+                  <img 
+                    src={client.logo_url} 
+                    alt={client.name} 
+                    className="h-8 w-8 object-contain rounded-sm"
+                  />
+                )}
+                <span>{client.name}</span>
+              </div>
+            </TableCell>
             <TableCell>{client.email}</TableCell>
             <TableCell>{client.instagram_id}</TableCell>
             <TableCell>
               <Badge 
                 variant={client.token_status === 'valid' ? 'default' : 'destructive'}
-                className={client.token_status === 'valid' ? 'bg-green-500' : ''}
+                className={client.token_status === 'valid' ? 'bg-green-500 hover:bg-green-600' : ''}
               >
                 {client.token_status === 'valid' ? 'Válido' : 'Expirado'}
               </Badge>
@@ -100,6 +129,10 @@ const ClientsTable: React.FC<ClientsTableProps> = ({
                   <DropdownMenuItem onClick={() => onEdit(client)}>
                     <Edit className="mr-2 h-4 w-4" />
                     <span>Editar</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCopyCredentials(client)}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    <span>Copiar credenciais</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleRefreshToken(client.id)}>
                     <RefreshCw className="mr-2 h-4 w-4" />

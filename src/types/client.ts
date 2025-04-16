@@ -7,6 +7,7 @@ export interface Client {
   instagram_token: string;
   token_status: 'valid' | 'expired';
   created_at: string;
+  logo_url?: string;
 }
 
 export interface Metric {
@@ -19,4 +20,9 @@ export interface Metric {
   comments: number;
   followers: number;
   engagement: number;
+}
+
+export interface DateFilter {
+  startDate: Date | null;
+  endDate: Date | null;
 }
