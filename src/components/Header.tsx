@@ -27,7 +27,7 @@ const Header: React.FC = () => {
   const clientLogo = clientInfo?.logo_url;
 
   return (
-    <header className="bg-white border-b border-gray-200 py-3 px-4 sm:px-6 flex justify-between items-center sticky top-0 z-10">
+    <header className="bg-gray-100 border-b border-gray-200 py-3 px-4 sm:px-6 flex justify-between items-center sticky top-0 z-10">
       <div className="flex items-center gap-4">
         {/* Logo da Funil Lab para todos os usuários */}
         <img 
