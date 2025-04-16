@@ -35,7 +35,7 @@ export function DateRangePicker({
               !dateRange && "text-muted-foreground"
             )}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <CalendarIcon className="mr-2 h-4 w-4 text-accent" />
             {dateRange?.from ? (
               dateRange.to ? (
                 <>
@@ -58,6 +58,7 @@ export function DateRangePicker({
             selected={dateRange}
             onSelect={onDateRangeChange}
             numberOfMonths={2}
+            className="pointer-events-auto"
           />
         </PopoverContent>
       </Popover>

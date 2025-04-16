@@ -33,12 +33,12 @@ const Header: React.FC = () => {
         <img 
           src="/lovable-uploads/b1145979-e0b0-4c99-bfa2-760a739b778f.png" 
           alt="Funil Lab" 
-          className="h-8 object-contain"
+          className="h-10 object-contain"
         />
         
         {/* Logo do cliente (se existir e o usuário for um cliente) */}
         {user?.role === 'client' && clientLogo && (
-          <div className="h-8 border-l border-gray-300 pl-4">
+          <div className="h-9 border-l border-gray-300 pl-4">
             <img 
               src={clientLogo} 
               alt={`${clientInfo?.name} Logo`}

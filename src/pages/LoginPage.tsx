@@ -37,18 +37,18 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-accent p-4">
+    <div className="min-h-screen flex items-center justify-center bg-primary p-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <img 
-              src="/placeholder.svg" 
-              alt="FunilLab Logo" 
-              className="h-20 w-auto" 
+              src="/lovable-uploads/b1145979-e0b0-4c99-bfa2-760a739b778f.png" 
+              alt="Funil Lab Logo" 
+              className="h-24 w-auto" 
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">FunilLab</h1>
-          <p className="text-gray-600">Painel de Métricas do Instagram</p>
+          <h1 className="text-3xl font-bold text-white">Funil Lab</h1>
+          <p className="text-gray-200">Painel de Métricas do Instagram</p>
         </div>
 
         <Card>
@@ -93,12 +93,12 @@ const LoginPage: React.FC = () => {
             <CardFooter>
               <Button 
                 type="submit" 
-                className="w-full" 
+                className="w-full bg-accent hover:bg-accent/90 text-primary" 
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <span className="flex items-center">
-                    <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></span>
+                    <span className="animate-spin h-4 w-4 mr-2 border-2 border-primary border-t-transparent rounded-full"></span>
                     Entrando...
                   </span>
                 ) : "Entrar"}
@@ -107,7 +107,7 @@ const LoginPage: React.FC = () => {
           </form>
         </Card>
 
-        <div className="mt-8 text-center text-sm text-gray-600">
+        <div className="mt-8 text-center text-sm text-gray-300">
           <p>Para fins de demonstração, use:</p>
           <p className="mt-2">
             <strong>Admin:</strong> admin@funillab.com / admin123

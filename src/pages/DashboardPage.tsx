@@ -58,7 +58,10 @@ const DashboardPage: React.FC = () => {
       
       // If both dates are selected
       if (dateRange.from && dateRange.to) {
-        return metricDate >= dateRange.from && metricDate <= dateRange.to;
+        // Add one day to end date to include the end date in the range
+        const endDate = new Date(dateRange.to);
+        endDate.setDate(endDate.getDate() + 1);
+        return metricDate >= dateRange.from && metricDate < endDate;
       }
       
       return true;
@@ -91,7 +94,7 @@ const DashboardPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="flex h-[90vh] items-center justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-funillab-blue"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
         </div>
       </div>
     );
@@ -108,8 +111,8 @@ const DashboardPage: React.FC = () => {
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-funillab-blue">Dashboard de Métricas</h1>
-              <p className="text-funillab-gray">
+              <h1 className="text-2xl font-bold text-primary">Dashboard de Métricas</h1>
+              <p className="text-secondary">
                 Bem-vindo, <span className="font-medium">{displayName}</span>! 
                 Confira abaixo as métricas de desempenho da sua conta.
               </p>
@@ -128,28 +131,28 @@ const DashboardPage: React.FC = () => {
           <MetricCard
             title="Alcance"
             value={latestMetrics?.reach.toLocaleString() || "0"}
-            icon={<Eye className="h-4 w-4 text-funillab-cyan" />}
+            icon={<Eye className="h-4 w-4 text-accent" />}
             trend={trends ? { value: trends.reach, isPositive: trends.reach >= 0 } : undefined}
           />
           
           <MetricCard
             title="Impressões"
             value={latestMetrics?.impressions.toLocaleString() || "0"}
-            icon={<TrendingUp className="h-4 w-4 text-funillab-cyan" />}
+            icon={<TrendingUp className="h-4 w-4 text-accent" />}
             trend={trends ? { value: trends.impressions, isPositive: trends.impressions >= 0 } : undefined}
           />
           
           <MetricCard
             title="Curtidas"
             value={latestMetrics?.likes.toLocaleString() || "0"}
-            icon={<Heart className="h-4 w-4 text-funillab-cyan" />}
+            icon={<Heart className="h-4 w-4 text-accent" />}
             trend={trends ? { value: trends.likes, isPositive: trends.likes >= 0 } : undefined}
           />
           
           <MetricCard
             title="Comentários"
             value={latestMetrics?.comments.toLocaleString() || "0"}
-            icon={<MessageCircle className="h-4 w-4 text-funillab-cyan" />}
+            icon={<MessageCircle className="h-4 w-4 text-accent" />}
             trend={trends ? { value: trends.comments, isPositive: trends.comments >= 0 } : undefined}
           />
         </div>
