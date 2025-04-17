@@ -52,12 +52,12 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f3f3f3] p-4">
       <div className="w-full max-w-md animate-fade-in">
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <div className="flex justify-center">
             <img 
               src="/lovable-uploads/b1145979-e0b0-4c99-bfa2-760a739b778f.png" 
               alt="Funil Lab Logo" 
-              className="h-32 w-auto" 
+              className="h-24 w-auto" 
             />
           </div>
           <p className="text-gray-600 mt-2">Painel de Métricas do Instagram</p>
@@ -71,7 +71,7 @@ const LoginPage: React.FC = () => {
             </CardDescription>
           </CardHeader>
           
-          <Tabs defaultValue="client" value={loginType} onValueChange={setLoginType} className="w-full">
+          <Tabs defaultValue="client" className="w-full">
             <TabsList className="grid grid-cols-2 w-full rounded-none">
               <TabsTrigger value="client" className="text-sm data-[state=active]:bg-funillab-cyan/20 data-[state=active]:text-funillab-cyan">
                 <User className="h-4 w-4 mr-2" />
@@ -119,12 +119,12 @@ const LoginPage: React.FC = () => {
                 <CardFooter>
                   <Button 
                     type="submit" 
-                    className="w-full bg-funillab-cyan hover:bg-funillab-cyan/90 text-funillab-dark" 
+                    className="w-full bg-[#021e4a] hover:bg-[#021e4a]/90 text-white" 
                     disabled={isLoading}
                   >
                     {isLoading ? (
                       <span className="flex items-center">
-                        <span className="animate-spin h-4 w-4 mr-2 border-2 border-funillab-dark border-t-transparent rounded-full"></span>
+                        <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></span>
                         Entrando...
                       </span>
                     ) : "Acessar Métricas"}
@@ -161,12 +161,12 @@ const LoginPage: React.FC = () => {
                 <CardFooter>
                   <Button 
                     type="submit" 
-                    className="w-full bg-funillab-cyan hover:bg-funillab-cyan/90 text-funillab-dark" 
+                    className="w-full bg-[#021e4a] hover:bg-[#021e4a]/90 text-white" 
                     disabled={isLoading}
                   >
                     {isLoading ? (
                       <span className="flex items-center">
-                        <span className="animate-spin h-4 w-4 mr-2 border-2 border-funillab-dark border-t-transparent rounded-full"></span>
+                        <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></span>
                         Entrando...
                       </span>
                     ) : "Acessar Painel de Controle"}

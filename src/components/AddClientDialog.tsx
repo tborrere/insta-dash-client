@@ -49,7 +49,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
   
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name || !email || !instagramId || !instagramToken) {
@@ -64,12 +64,12 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
     setIsSubmitting(true);
     
     try {
-      onSave({
+      await onSave({
         name,
         email,
         instagram_id: instagramId,
         instagram_token: instagramToken,
-        logo_url: initialData?.logo_url || 'https://via.placeholder.com/150'
+        logo_url: initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo'
       });
       
       onClose();
@@ -102,8 +102,8 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
             <div className="grid gap-4">
               <Label>Logo do Cliente</Label>
               <LogoUpload
-                currentLogoUrl={initialData?.logo_url}
-                onLogoUpload={(file) => console.log('Logo uploaded:', file)}
+                currentLogoUrl={initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo'}
+                onLogoUpload={(file) => file}
                 clientId={initialData?.id || 'new'}
               />
             </div>
