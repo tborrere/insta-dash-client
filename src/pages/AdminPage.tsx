@@ -1,124 +1,22 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import Header from '@/components/Header';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import ClientsTable from '@/components/ClientsTable';
-import ClientForm from '@/components/ClientForm';
-import { Button } from '@/components/ui/button';
+import AddClientDialog from '@/components/AddClientDialog';
+import SupabaseSetupGuide from '@/components/SupabaseSetupGuide';
 import { useToast } from '@/components/ui/use-toast';
-import { getAllClients } from '@/services/mockData';
-import { Client } from '@/types/client';
-import { PlusCircle } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Users, Database, Key } from 'lucide-react';
 
 const AdminPage: React.FC = () => {
-  const [clients, setClients] = useState<Client[]>(getAllClients());
-  const [isAddClientOpen, setIsAddClientOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | undefined>(undefined);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [clientToDelete, setClientToDelete] = useState<string | null>(null);
-
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  const handleViewMetrics = (clientId: string) => {
-    // Em uma aplicação real, você poderia querer ter uma rota específica para cada cliente
-    // Por exemplo: /clients/client_id/dashboard
+  const handleAddClient = () => {
     toast({
-      title: "Visualizando métricas",
-      description: `Redirecionando para as métricas do cliente ${clientId}...`,
+      title: "Cliente adicionado",
+      description: "O novo cliente foi adicionado com sucesso.",
     });
-    navigate('/dashboard');
-  };
-
-  const handleEditClient = (client: Client) => {
-    setSelectedClient(client);
-    setIsAddClientOpen(true);
-  };
-
-  const handleDeleteClick = (clientId: string) => {
-    setClientToDelete(clientId);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (!clientToDelete) return;
-    
-    // Remove client from list
-    setClients(clients.filter(client => client.id !== clientToDelete));
-    
-    toast({
-      title: "Cliente removido",
-      description: "O cliente foi removido com sucesso.",
-    });
-    
-    setIsDeleteDialogOpen(false);
-    setClientToDelete(null);
-  };
-
-  const handleSaveClient = (clientData: any) => {
-    // Em um caso real, faríamos uma chamada à API para salvar no banco de dados
-    
-    if (selectedClient) {
-      // Atualizar cliente existente
-      const updatedClients = clients.map(client => 
-        client.id === selectedClient.id 
-          ? { 
-              ...client, 
-              ...clientData,
-              logo_url: clientData.logo ? URL.createObjectURL(clientData.logo) : client.logo_url,
-            } 
-          : client
-      );
-      setClients(updatedClients);
-      
-      toast({
-        title: "Cliente atualizado",
-        description: "As informações do cliente foram atualizadas com sucesso.",
-      });
-    } else {
-      // Adicionar novo cliente
-      const logoUrl = clientData.logo ? URL.createObjectURL(clientData.logo) : undefined;
-      
-      const newClient: Client = {
-        id: `client${clients.length + 1}`,
-        name: clientData.name,
-        email: clientData.email,
-        instagram_id: clientData.instagram_id,
-        instagram_token: clientData.instagram_token,
-        token_status: 'valid',
-        created_at: new Date().toISOString(),
-        logo_url: logoUrl,
-      };
-      
-      setClients([...clients, newClient]);
-      
-      toast({
-        title: "Cliente adicionado",
-        description: `O novo cliente "${clientData.name}" foi adicionado com sucesso. As credenciais de acesso foram geradas.`,
-      });
-    }
-    
-    setIsAddClientOpen(false);
-    setSelectedClient(undefined);
-  };
-
-  const handleCloseDialog = () => {
-    setIsAddClientOpen(false);
-    setSelectedClient(undefined);
   };
 
   return (
@@ -126,65 +24,78 @@ const AdminPage: React.FC = () => {
       <Header />
       
       <main className="container mx-auto py-6 px-4">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-funillab-blue">Painel Administrativo</h1>
-            <p className="text-funillab-gray">
-              Gerencie os clientes e suas métricas do Instagram
-            </p>
+            <h1 className="text-2xl font-bold text-funillab-blue">Painel de Administração</h1>
+            <p className="text-gray-600">Gerencie clientes, usuários e configurações</p>
           </div>
+        </div>
+        
+        <SupabaseSetupGuide />
+        
+        <Tabs defaultValue="clients" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="clients" className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span>Clientes</span>
+            </TabsTrigger>
+            <TabsTrigger value="database" className="flex items-center gap-1">
+              <Database className="h-4 w-4" />
+              <span>Banco de Dados</span>
+            </TabsTrigger>
+            <TabsTrigger value="api" className="flex items-center gap-1">
+              <Key className="h-4 w-4" />
+              <span>Tokens API</span>
+            </TabsTrigger>
+          </TabsList>
           
-          <Button 
-            onClick={() => {
-              setSelectedClient(undefined);
-              setIsAddClientOpen(true);
-            }}
-            className="flex items-center gap-2 bg-funillab-blue hover:bg-funillab-blue/90"
-          >
-            <PlusCircle className="h-4 w-4" />
-            Adicionar Cliente
-          </Button>
-        </div>
-
-        <div className="bg-white rounded-md shadow-sm">
-          <ClientsTable 
-            clients={clients}
-            onViewMetrics={handleViewMetrics}
-            onEdit={handleEditClient}
-            onDelete={handleDeleteClick}
-          />
-        </div>
+          <TabsContent value="clients">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-funillab-blue">Gerenciar Clientes</h2>
+              <AddClientDialog onAddClient={handleAddClient} />
+            </div>
+            <Card>
+              <CardContent className="p-0">
+                <ClientsTable />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="database">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurações de Banco de Dados</CardTitle>
+                <CardDescription>
+                  Gerencie as tabelas e dados do sistema de métricas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Esta área permitirá gerenciar o esquema do banco de dados e visualizar dados agregados.
+                  Configure sua conexão com o Supabase para ativar esta funcionalidade.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="api">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tokens de API do Instagram</CardTitle>
+                <CardDescription>
+                  Gerencie os tokens de acesso para coletar métricas do Instagram
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Essa área permitirá gerenciar e visualizar os tokens de API do Instagram para cada cliente.
+                  Configure sua conexão com o Supabase para ativar esta funcionalidade.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
-
-      {/* Add/Edit Client Dialog */}
-      <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
-        <DialogContent className="sm:max-w-[700px]">
-          <ClientForm
-            initialData={selectedClient}
-            onSubmit={handleSaveClient}
-            onCancel={handleCloseDialog}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Isto irá remover permanentemente 
-              o cliente e todos os seus dados associados.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };

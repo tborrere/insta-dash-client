@@ -21,9 +21,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route 
               path="/dashboard" 
               element={
@@ -32,7 +30,6 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
-            
             <Route 
               path="/admin" 
               element={
@@ -41,7 +38,6 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
-            
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           <Toaster />

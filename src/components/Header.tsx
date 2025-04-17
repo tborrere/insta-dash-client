@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 import { getClientById } from '@/services/mockData';
-import { User, LogOut, Home, Settings } from 'lucide-react';
+import { User, LogOut, Home, Settings, ChevronDown } from 'lucide-react';
 
 const Header: React.FC = () => {
   const { user, logout, isAdmin } = useAuth();
@@ -27,18 +27,18 @@ const Header: React.FC = () => {
   const clientLogo = clientInfo?.logo_url;
 
   return (
-    <header className="bg-gray-100 border-b border-gray-200 py-3 px-4 sm:px-6 flex justify-between items-center sticky top-0 z-10">
+    <header className="bg-white border-b border-gray-200 py-3 px-4 sm:px-6 flex justify-between items-center sticky top-0 z-10 shadow-sm">
       <div className="flex items-center gap-4">
         {/* Logo da Funil Lab para todos os usuários */}
         <img 
           src="/lovable-uploads/b1145979-e0b0-4c99-bfa2-760a739b778f.png" 
           alt="Funil Lab" 
-          className="h-10 object-contain"
+          className="h-12 object-contain"
         />
         
         {/* Logo do cliente (se existir e o usuário for um cliente) */}
         {user?.role === 'client' && clientLogo && (
-          <div className="h-9 border-l border-gray-300 pl-4">
+          <div className="h-10 border-l border-gray-300 pl-4 flex items-center">
             <img 
               src={clientLogo} 
               alt={`${clientInfo?.name} Logo`}
@@ -52,12 +52,24 @@ const Header: React.FC = () => {
         )}
       </div>
 
-      <div className="flex items-center">
+      <div className="flex items-center gap-2">
+        {isAdmin() && (
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/admin')}
+            className="text-funillab-blue hover:text-funillab-blue/80 hover:bg-funillab-blue/10"
+          >
+            <Settings className="h-4 w-4 mr-1" />
+            Painel Admin
+          </Button>
+        )}
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <User className="h-4 w-4" />
-              <span className="sr-only">Perfil</span>
+            <Button variant="outline" className="flex gap-2 items-center border-gray-200">
+              <User className="h-4 w-4 text-funillab-blue" />
+              <span className="text-sm font-medium hidden sm:inline">{user?.name}</span>
+              <ChevronDown className="h-3 w-3 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
