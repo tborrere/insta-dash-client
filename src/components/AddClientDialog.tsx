@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
 }) => {
   const [name, setName] = useState(initialData?.name || '');
   const [email, setEmail] = useState(initialData?.email || '');
+  const [password, setPassword] = useState('');
   const [instagramId, setInstagramId] = useState(initialData?.instagram_id || '');
   const [instagramToken, setInstagramToken] = useState(initialData?.instagram_token || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,9 +41,11 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       setEmail(initialData.email);
       setInstagramId(initialData.instagram_id);
       setInstagramToken(initialData.instagram_token);
+      setPassword(''); // Reset password on edit
     } else {
       setName('');
       setEmail('');
+      setPassword('');
       setInstagramId('');
       setInstagramToken('');
     }
@@ -52,7 +56,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !email || !instagramId || !instagramToken) {
+    if (!name || !email || !instagramId || !instagramToken || (!initialData && !password)) {
       toast({
         title: "Dados incompletos",
         description: "Preencha todos os campos obrigatórios.",
@@ -67,6 +71,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       await onSave({
         name,
         email,
+        password, // Added password to the saved data
         instagram_id: instagramId,
         instagram_token: instagramToken,
         logo_url: initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo'
@@ -103,7 +108,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
               <Label>Logo do Cliente</Label>
               <LogoUpload
                 currentLogoUrl={initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo'}
-                onLogoUpload={(file) => file}
+                onLogoUpload={(file) => Promise.resolve(file)}
                 clientId={initialData?.id || 'new'}
               />
             </div>
@@ -133,6 +138,22 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
                 required
               />
             </div>
+            {!initialData && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="password" className="text-right">
+                  Senha
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="col-span-3"
+                  required
+                  placeholder="Digite a senha do cliente"
+                />
+              </div>
+            )}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="instagram-id" className="text-right">
                 Instagram ID

@@ -73,11 +73,17 @@ const LoginPage: React.FC = () => {
           
           <Tabs defaultValue="client" className="w-full">
             <TabsList className="grid grid-cols-2 w-full rounded-none">
-              <TabsTrigger value="client" className="text-sm data-[state=active]:bg-funillab-cyan/20 data-[state=active]:text-funillab-cyan">
+              <TabsTrigger 
+                value="client" 
+                className="text-sm data-[state=active]:bg-[#021e4a]/10 data-[state=active]:text-[#021e4a]"
+              >
                 <User className="h-4 w-4 mr-2" />
                 Cliente
               </TabsTrigger>
-              <TabsTrigger value="admin" className="text-sm data-[state=active]:bg-funillab-cyan/20 data-[state=active]:text-funillab-cyan">
+              <TabsTrigger 
+                value="admin" 
+                className="text-sm data-[state=active]:bg-[#021e4a]/10 data-[state=active]:text-[#021e4a]"
+              >
                 <Shield className="h-4 w-4 mr-2" />
                 Administrador
               </TabsTrigger>
