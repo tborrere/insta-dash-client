@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -51,24 +50,23 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-funillab-dark p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#f3f3f3] p-4">
       <div className="w-full max-w-md animate-fade-in">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
+        <div className="text-center mb-6">
+          <div className="flex justify-center">
             <img 
               src="/lovable-uploads/b1145979-e0b0-4c99-bfa2-760a739b778f.png" 
               alt="Funil Lab Logo" 
               className="h-32 w-auto" 
             />
           </div>
-          <h1 className="text-3xl font-bold text-white">Funil Lab</h1>
-          <p className="text-gray-300">Painel de Métricas do Instagram</p>
+          <p className="text-gray-600 mt-2">Painel de Métricas do Instagram</p>
         </div>
 
-        <Card className="shadow-lg border-gray-700 overflow-hidden">
-          <CardHeader className="bg-gray-800 text-white border-b border-gray-700">
+        <Card className="shadow-lg border-gray-200">
+          <CardHeader className="bg-white text-gray-900 border-b border-gray-100">
             <CardTitle className="text-center text-xl">Login</CardTitle>
-            <CardDescription className="text-center text-gray-300">
+            <CardDescription className="text-center text-gray-600">
               Acesse sua conta para visualizar suas métricas
             </CardDescription>
           </CardHeader>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Client } from '@/types/client';
 import { useToast } from '@/components/ui/use-toast';
+import LogoUpload from './LogoUpload';
 
 interface AddClientDialogProps {
   isOpen: boolean;
@@ -33,7 +33,6 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
   const [instagramToken, setInstagramToken] = useState(initialData?.instagram_token || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Reset form when initialData changes
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);
@@ -70,7 +69,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
         email,
         instagram_id: instagramId,
         instagram_token: instagramToken,
-        logo_url: initialData?.logo_url
+        logo_url: initialData?.logo_url || 'https://via.placeholder.com/150'
       });
       
       onClose();
@@ -98,7 +97,17 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
                 : 'Preencha os dados para adicionar um novo cliente.'}
             </DialogDescription>
           </DialogHeader>
+          
           <div className="grid gap-4 py-4">
+            <div className="grid gap-4">
+              <Label>Logo do Cliente</Label>
+              <LogoUpload
+                currentLogoUrl={initialData?.logo_url}
+                onLogoUpload={(file) => console.log('Logo uploaded:', file)}
+                clientId={initialData?.id || 'new'}
+              />
+            </div>
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
                 Nome
