@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,14 +8,65 @@ import AddClientDialog from '@/components/AddClientDialog';
 import SupabaseSetupGuide from '@/components/SupabaseSetupGuide';
 import { useToast } from '@/components/ui/use-toast';
 import { Users, Database, Key } from 'lucide-react';
+import { Client } from '@/types/client';
+import { useQuery } from '@tanstack/react-query';
+import { listAllClients } from '@/services/supabaseClient';
+import { Button } from '@/components/ui/button';
 
 const AdminPage: React.FC = () => {
   const { toast } = useToast();
+  const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+
+  // Mock clients data for development
+  const mockClients: Client[] = [
+    {
+      id: '1',
+      name: 'Cliente Exemplo 1',
+      email: 'cliente1@exemplo.com',
+      instagram_id: 'cliente1_insta',
+      instagram_token: 'token123',
+      token_status: 'valid',
+      created_at: '2025-03-15T10:00:00Z',
+      logo_url: 'https://via.placeholder.com/150'
+    },
+    {
+      id: '2',
+      name: 'Cliente Exemplo 2',
+      email: 'cliente2@exemplo.com',
+      instagram_id: 'cliente2_insta',
+      instagram_token: 'token456',
+      token_status: 'expired',
+      created_at: '2025-02-10T10:00:00Z'
+    }
+  ];
 
   const handleAddClient = () => {
+    setIsAddClientDialogOpen(false);
     toast({
       title: "Cliente adicionado",
       description: "O novo cliente foi adicionado com sucesso.",
+    });
+  };
+
+  const handleEditClient = (client: Client) => {
+    setSelectedClient(client);
+    setIsAddClientDialogOpen(true);
+  };
+
+  const handleDeleteClient = (clientId: string) => {
+    // In a real app, this would call an API to delete the client
+    toast({
+      title: "Cliente removido",
+      description: "O cliente foi removido com sucesso.",
+    });
+  };
+
+  const handleViewMetrics = (clientId: string) => {
+    // In a real app, this would navigate to the client's metrics page
+    toast({
+      title: "Visualizando métricas",
+      description: `Redirecionando para métricas do cliente ID: ${clientId}`,
     });
   };
 
@@ -52,11 +103,29 @@ const AdminPage: React.FC = () => {
           <TabsContent value="clients">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-funillab-blue">Gerenciar Clientes</h2>
-              <AddClientDialog onAddClient={handleAddClient} />
+              <Button onClick={() => setIsAddClientDialogOpen(true)}>
+                Adicionar Cliente
+              </Button>
+              {isAddClientDialogOpen && (
+                <AddClientDialog 
+                  isOpen={isAddClientDialogOpen} 
+                  onClose={() => {
+                    setIsAddClientDialogOpen(false);
+                    setSelectedClient(null);
+                  }}
+                  onSave={handleAddClient}
+                  initialData={selectedClient || undefined}
+                />
+              )}
             </div>
             <Card>
               <CardContent className="p-0">
-                <ClientsTable />
+                <ClientsTable 
+                  clients={mockClients} 
+                  onViewMetrics={handleViewMetrics}
+                  onEdit={handleEditClient}
+                  onDelete={handleDeleteClient}
+                />
               </CardContent>
             </Card>
           </TabsContent>

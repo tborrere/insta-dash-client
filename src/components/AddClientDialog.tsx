@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,6 +33,21 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
   const [instagramToken, setInstagramToken] = useState(initialData?.instagram_token || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Reset form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setName(initialData.name);
+      setEmail(initialData.email);
+      setInstagramId(initialData.instagram_id);
+      setInstagramToken(initialData.instagram_token);
+    } else {
+      setName('');
+      setEmail('');
+      setInstagramId('');
+      setInstagramToken('');
+    }
+  }, [initialData]);
+  
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -55,15 +70,8 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
         email,
         instagram_id: instagramId,
         instagram_token: instagramToken,
+        logo_url: initialData?.logo_url
       });
-      
-      // Reset form
-      if (!initialData) {
-        setName('');
-        setEmail('');
-        setInstagramId('');
-        setInstagramToken('');
-      }
       
       onClose();
     } catch (error) {
