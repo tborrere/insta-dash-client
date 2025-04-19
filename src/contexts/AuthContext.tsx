@@ -1,5 +1,7 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 
 type Role = 'admin' | 'client';
 
@@ -33,50 +35,79 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
-      setIsAuthenticated(true);
+      try {
+        setUser(JSON.parse(savedUser));
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Erro ao parsear usuário salvo:', error);
+        localStorage.removeItem('user');
+      }
     }
     setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { data, error } = await supabase
-      .from('clientes')
-      .select('*')
-      .eq('email', email)
-      .single();
+    setIsLoading(true);
+    try {
+      // Busca o cliente pelo email
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('email', email)
+        .single();
 
-    console.log('DATA:', data);
-    console.log('ERRO:', error);
-    console.log('SENHA DIGITADA:', password);
-    console.log('SENHA NO BANCO:', data?.senha_hash);
+      console.log('Dados retornados pelo Supabase:', data);
+      
+      if (error) {
+        console.error('Erro ao buscar cliente:', error);
+        throw new Error('Email ou senha inválidos');
+      }
 
-    if (error || !data || data.senha_hash !== password) {
-      throw new Error('Email ou senha inválidos');
+      if (!data || data.senha_hash !== password) {
+        console.error('Credenciais inválidas:', { 
+          email, 
+          senhaDigitada: password, 
+          senhaNoBanco: data?.senha_hash 
+        });
+        throw new Error('Email ou senha inválidos');
+      }
+
+      // Cria objeto de usuário autenticado
+      const userData: User = {
+        id: data.id,
+        email: data.email,
+        role: 'client',
+        name: data.nome,
+        clientId: data.id,
+        instagramId: data.instagram_id,
+        logo: data.logo_url,
+        calendar: data.calendar_url,
+      };
+
+      // Atualiza o estado e salva no localStorage
+      setUser(userData);
+      setIsAuthenticated(true);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      console.log('Login realizado com sucesso:', userData);
+      toast({
+        title: "Login realizado com sucesso",
+        description: `Bem-vindo(a), ${userData.name || userData.email}!`,
+      });
+
+    } catch (error: any) {
+      console.error('Erro durante login:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-
-    const userData: User = {
-      id: data.id,
-      email: data.email,
-      role: 'client',
-      name: data.nome,
-      clientId: data.id,
-      instagramId: data.instagram_id,
-      logo: data.logo_url,
-      calendar: data.calendar_url,
-    };
-
-    setUser(userData);
-    setIsAuthenticated(true);
-    setIsLoading(false);
-    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    setIsLoading(false);
     localStorage.removeItem('user');
+    console.log('Logout realizado');
   };
 
   const isAdmin = () => user?.role === 'admin';
