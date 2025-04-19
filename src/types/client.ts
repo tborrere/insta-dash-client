@@ -9,6 +9,7 @@ export interface Client {
   token_status: 'valid' | 'expired';
   created_at: string;
   logo_url?: string;
+  calendar?: string; // Adicionado o campo calendar para armazenar a URL do calendário
 }
 
 export interface Metric {

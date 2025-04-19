@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -5,19 +6,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import MetricCard from '@/components/MetricCard';
 import MetricChart from '@/components/MetricChart';
-import DateRangePicker from '@/components/DateRangePicker';
+import { DateRangePicker } from '@/components/DateRangePicker';
 import CalendarEmbed from '@/components/CalendarEmbed';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subDays } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 
 // Importamos o serviço de métricas que contém a função getClientById
 import { getClientById } from '@/services/mockData';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 7));
-  const [endDate, setEndDate] = useState<Date>(new Date());
-  const [metrics, setMetrics] = useState([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 7),
+    to: new Date()
+  });
+  const [metrics, setMetrics] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,6 +33,9 @@ const DashboardPage: React.FC = () => {
         if (!user?.clientId) {
           throw new Error('Client ID not found.');
         }
+
+        const startDate = dateRange?.from || subDays(new Date(), 7);
+        const endDate = dateRange?.to || new Date();
 
         const formattedStartDate = format(startDate, 'yyyy-MM-dd');
         const formattedEndDate = format(endDate, 'yyyy-MM-dd');
@@ -45,7 +52,7 @@ const DashboardPage: React.FC = () => {
           throw new Error(error.message);
         }
 
-        setMetrics(data);
+        setMetrics(data || []);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -54,20 +61,29 @@ const DashboardPage: React.FC = () => {
     };
 
     fetchMetrics();
-  }, [user?.clientId, startDate, endDate]);
-
-  const handleDateRangeChange = (start: Date | null, end: Date | null) => {
-    if (start && end) {
-      setStartDate(start);
-      setEndDate(end);
-    }
-  };
+  }, [user?.clientId, dateRange]);
 
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
       <Header />
       <main className="container mx-auto px-4 py-6">
-        <Card className="mb-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Agendamentos</CardTitle>
+            <CardDescription>
+              Visualize e gerencie seus agendamentos de conteúdo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {user?.calendar ? (
+              <CalendarEmbed calendarUrl={user.calendar} />
+            ) : (
+              <p>Nenhum calendário associado a este cliente.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="mb-4 mt-6">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Visão Geral</CardTitle>
             <CardDescription>
@@ -75,7 +91,11 @@ const DashboardPage: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <DateRangePicker onChange={handleDateRangeChange} />
+            <DateRangePicker
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+              className="w-full"
+            />
           </CardContent>
         </Card>
 
@@ -83,22 +103,22 @@ const DashboardPage: React.FC = () => {
           <MetricCard
             title="Seguidores"
             value={metrics.reduce((acc, curr) => acc + (curr.seguidores || 0), 0)}
-            isLoading={loading}
+            icon={<span>👥</span>}
           />
           <MetricCard
             title="Curtidas"
             value={metrics.reduce((acc, curr) => acc + (curr.curtidas || 0), 0)}
-            isLoading={loading}
+            icon={<span>👍</span>}
           />
           <MetricCard
             title="Comentários"
             value={metrics.reduce((acc, curr) => acc + (curr.comentarios || 0), 0)}
-            isLoading={loading}
+            icon={<span>💬</span>}
           />
           <MetricCard
             title="Alcance"
             value={metrics.reduce((acc, curr) => acc + (curr.alcance || 0), 0)}
-            isLoading={loading}
+            icon={<span>📊</span>}
           />
         </div>
 
@@ -113,26 +133,23 @@ const DashboardPage: React.FC = () => {
             {loading && <p>Carregando gráfico...</p>}
             {error && <p className="text-red-500">Erro ao carregar gráfico: {error}</p>}
             {!loading && !error && metrics.length > 0 && (
-              <MetricChart metrics={metrics} />
+              <MetricChart
+                title="Métricas de Instagram"
+                data={metrics.map(m => ({
+                  date: m.data,
+                  reach: m.alcance,
+                  impressions: m.impressoes,
+                  likes: m.curtidas,
+                  comments: m.comentarios,
+                  followers: m.seguidores,
+                  engagement: m.engajamento
+                }))}
+                dataKey="reach"
+                type="area"
+              />
             )}
             {!loading && !error && metrics.length === 0 && (
               <p>Nenhuma métrica encontrada para o período selecionado.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Agendamentos</CardTitle>
-            <CardDescription>
-              Visualize e gerencie seus agendamentos de conteúdo.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {user?.calendar ? (
-              <CalendarEmbed calendarUrl={user.calendar} />
-            ) : (
-              <p>Nenhum calendário associado a este cliente.</p>
             )}
           </CardContent>
         </Card>
