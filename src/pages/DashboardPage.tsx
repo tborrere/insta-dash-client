@@ -11,6 +11,7 @@ import CalendarEmbed from '@/components/CalendarEmbed';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
+import { Metric } from '@/types/client';
 
 // Importamos o serviço de métricas que contém a função getClientById
 import { getClientById } from '@/services/mockData';
@@ -21,7 +22,7 @@ const DashboardPage: React.FC = () => {
     from: subDays(new Date(), 7),
     to: new Date()
   });
-  const [metrics, setMetrics] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<Metric[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,8 +53,22 @@ const DashboardPage: React.FC = () => {
           throw new Error(error.message);
         }
 
-        setMetrics(data || []);
+        // Transformando os dados recebidos do Supabase para o formato da interface Metric
+        const formattedMetrics: Metric[] = (data || []).map((item: any) => ({
+          id: item.id,
+          client_id: item.cliente_id,
+          date: item.data,
+          reach: item.alcance || 0,
+          impressions: item.impressoes || 0,
+          likes: item.curtidas || 0,
+          comments: item.comentarios || 0,
+          followers: item.seguidores || 0,
+          engagement: item.engajamento || 0
+        }));
+
+        setMetrics(formattedMetrics);
       } catch (err: any) {
+        console.error('Erro ao buscar métricas:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -67,22 +82,6 @@ const DashboardPage: React.FC = () => {
     <div className="min-h-screen bg-[#f5f5f5]">
       <Header />
       <main className="container mx-auto px-4 py-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Agendamentos</CardTitle>
-            <CardDescription>
-              Visualize e gerencie seus agendamentos de conteúdo.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {user?.calendar ? (
-              <CalendarEmbed calendarUrl={user.calendar} />
-            ) : (
-              <p>Nenhum calendário associado a este cliente.</p>
-            )}
-          </CardContent>
-        </Card>
-
         <Card className="mb-4 mt-6">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Visão Geral</CardTitle>
@@ -102,22 +101,22 @@ const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <MetricCard
             title="Seguidores"
-            value={metrics.reduce((acc, curr) => acc + (curr.seguidores || 0), 0)}
+            value={metrics.reduce((acc, curr) => acc + (curr.followers || 0), 0)}
             icon={<span>👥</span>}
           />
           <MetricCard
             title="Curtidas"
-            value={metrics.reduce((acc, curr) => acc + (curr.curtidas || 0), 0)}
+            value={metrics.reduce((acc, curr) => acc + (curr.likes || 0), 0)}
             icon={<span>👍</span>}
           />
           <MetricCard
             title="Comentários"
-            value={metrics.reduce((acc, curr) => acc + (curr.comentarios || 0), 0)}
+            value={metrics.reduce((acc, curr) => acc + (curr.comments || 0), 0)}
             icon={<span>💬</span>}
           />
           <MetricCard
             title="Alcance"
-            value={metrics.reduce((acc, curr) => acc + (curr.alcance || 0), 0)}
+            value={metrics.reduce((acc, curr) => acc + (curr.reach || 0), 0)}
             icon={<span>📊</span>}
           />
         </div>
@@ -135,21 +134,29 @@ const DashboardPage: React.FC = () => {
             {!loading && !error && metrics.length > 0 && (
               <MetricChart
                 title="Métricas de Instagram"
-                data={metrics.map(m => ({
-                  date: m.data,
-                  reach: m.alcance,
-                  impressions: m.impressoes,
-                  likes: m.curtidas,
-                  comments: m.comentarios,
-                  followers: m.seguidores,
-                  engagement: m.engajamento
-                }))}
+                data={metrics}
                 dataKey="reach"
                 type="area"
               />
             )}
             {!loading && !error && metrics.length === 0 && (
               <p>Nenhuma métrica encontrada para o período selecionado.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Agendamentos</CardTitle>
+            <CardDescription>
+              Visualize e gerencie seus agendamentos de conteúdo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {user?.calendar ? (
+              <CalendarEmbed calendarUrl={user.calendar} />
+            ) : (
+              <p>Nenhum calendário associado a este cliente.</p>
             )}
           </CardContent>
         </Card>
