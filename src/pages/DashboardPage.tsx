@@ -4,11 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import MetricCard from '@/components/MetricCard';
 import MetricChart from '@/components/MetricChart';
+import CalendarEmbed from '@/components/CalendarEmbed';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { DateRange } from 'react-day-picker';
 import { getClientById, getMetricsForClient } from '@/services/mockData';
 import { Metric } from '@/types/client';
-import { Instagram, TrendingUp, Eye, Heart, MessageCircle, Users } from 'lucide-react';
+import { Instagram, TrendingUp, Eye, Heart, MessageCircle } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -125,6 +126,11 @@ const DashboardPage: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Google Calendar Integration */}
+        <CalendarEmbed 
+          calendarUrl="https://calendar.google.com/calendar/embed?src=tborrere%40gmail.com&ctz=America%2FSao_Paulo" 
+        />
 
         {/* Overview cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
