@@ -46,7 +46,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .eq('email', email)
       .single();
 
-    // 🧠 DEBUG PRA VER O QUE TÁ VINDO
     console.log('DATA:', data);
     console.log('ERRO:', error);
     console.log('SENHA DIGITADA:', password);
@@ -76,4 +75,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    setIsLoading
+    setIsLoading(false);
+    localStorage.removeItem('user');
+  };
+
+  const isAdmin = () => user?.role === 'admin';
+
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, isAdmin }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth precisa estar dentro de um AuthProvider');
+  return context;
+};
