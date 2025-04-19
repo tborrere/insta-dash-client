@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
@@ -110,7 +109,7 @@ const DashboardPage: React.FC = () => {
       
       <main className="container mx-auto py-6 px-4">
         <div className="mb-8">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col space-y-4">
             <div>
               <h1 className="text-2xl font-bold text-primary">Dashboard de Métricas</h1>
               <p className="text-secondary">
@@ -118,12 +117,6 @@ const DashboardPage: React.FC = () => {
                 Confira abaixo as métricas de desempenho da sua conta.
               </p>
             </div>
-            
-            <DateRangePicker 
-              dateRange={dateRange}
-              onDateRangeChange={setDateRange}
-              className="w-[300px]"
-            />
           </div>
         </div>
 
@@ -131,6 +124,15 @@ const DashboardPage: React.FC = () => {
         <CalendarEmbed 
           calendarUrl="https://calendar.google.com/calendar/embed?src=tborrere%40gmail.com&ctz=America%2FSao_Paulo" 
         />
+
+        {/* Date Range Picker - Now placed below the calendar */}
+        <div className="mb-8 flex justify-end">
+          <DateRangePicker 
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+            className="w-[300px]"
+          />
+        </div>
 
         {/* Overview cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
