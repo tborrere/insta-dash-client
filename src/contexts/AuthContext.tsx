@@ -33,11 +33,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Verificar se há usuário salvo no localStorage
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
         setIsAuthenticated(true);
+        console.log('Usuário recuperado do localStorage:', JSON.parse(savedUser));
       } catch (error) {
         console.error('Erro ao parsear usuário salvo:', error);
         localStorage.removeItem('user');
@@ -49,6 +51,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
+      console.log('Tentando login com:', { email, password });
+      
       // Busca o cliente pelo email
       const { data, error } = await supabase
         .from('clientes')
