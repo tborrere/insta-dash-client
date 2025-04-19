@@ -1,135 +1,83 @@
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { AuthState, User } from '../types/auth';
+type Role = 'admin' | 'client';
 
-interface AuthContextType extends AuthState {
+interface User {
+  id: string;
+  email: string;
+  role: Role;
+  name?: string;
+  clientId?: string;
+  instagramId?: string;
+  logo?: string;
+  calendar?: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAdmin: () => boolean;
 }
 
-const initialAuthState: AuthState = {
-  user: null,
-  isAuthenticated: false,
-  isLoading: true,
-};
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demo purposes - In a real app, this would come from your backend
-const MOCK_USERS = [
-  {
-    id: '1',
-    email: 'admin@funillab.com',
-    password: 'admin123',
-    name: 'Administrador',
-    role: 'admin' as const,
-  },
-  {
-    id: '2',
-    email: 'cliente1@exemplo.com',
-    password: 'cliente123',
-    name: 'Cliente 1',
-    role: 'client' as const,
-    clientId: 'client1',
-    instagramId: 'client1_instagram',
-  },
-  {
-    id: '3',
-    email: 'cliente2@exemplo.com',
-    password: 'cliente123',
-    name: 'Cliente 2',
-    role: 'client' as const,
-    clientId: 'client2',
-    instagramId: 'client2_instagram',
-  },
-];
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [authState, setAuthState] = useState<AuthState>(initialAuthState);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for saved session on app load
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser) as User;
-        setAuthState({
-          user: parsedUser,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-      } catch (error) {
-        console.error('Failed to parse saved user:', error);
-        localStorage.removeItem('user');
-        setAuthState({
-          ...initialAuthState,
-          isLoading: false,
-        });
-      }
-    } else {
-      setAuthState({
-        ...initialAuthState,
-        isLoading: false,
-      });
+      setUser(JSON.parse(savedUser));
+      setIsAuthenticated(true);
     }
+    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    // In a real app, this would be an API call to your backend
-    return new Promise<void>((resolve, reject) => {
-      // Simulate API delay
-      setTimeout(() => {
-        const user = MOCK_USERS.find(
-          (u) => u.email === email && u.password === password
-        );
+    const { data, error } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('email', email)
+      .single();
 
-        if (user) {
-          // Remove password from user object
-          const { password: _, ...userWithoutPassword } = user;
-          
-          // Update authentication state
-          setAuthState({
-            user: userWithoutPassword,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-          
-          // Save to localStorage (in a real app, would use secure cookies/tokens)
-          localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-          resolve();
-        } else {
-          reject(new Error('Email ou senha inválidos'));
-        }
-      }, 500);
-    });
+    if (error || !data || data.senha_hash !== password) {
+      throw new Error('Email ou senha inválidos');
+    }
+
+    const userData: User = {
+      id: data.id,
+      email: data.email,
+      role: 'client',
+      name: data.nome,
+      clientId: data.id,
+      instagramId: data.instagram_id,
+      logo: data.logo_url,
+      calendar: data.calendar_url,
+    };
+
+    setUser(userData);
+    setIsAuthenticated(true);
+    setIsLoading(false);
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = () => {
-    // Clear authentication state
-    setAuthState({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
-    });
-    
-    // Remove from localStorage
+    setUser(null);
+    setIsAuthenticated(false);
+    setIsLoading(false);
     localStorage.removeItem('user');
   };
 
-  const isAdmin = () => {
-    return authState.user?.role === 'admin';
-  };
+  const isAdmin = () => user?.role === 'admin';
 
   return (
-    <AuthContext.Provider
-      value={{
-        ...authState,
-        login,
-        logout,
-        isAdmin,
-      }}
-    >
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
@@ -137,8 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth precisa estar dentro de um AuthProvider');
   return context;
 };
+
