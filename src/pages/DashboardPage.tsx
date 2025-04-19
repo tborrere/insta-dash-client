@@ -6,7 +6,7 @@ import MetricChart from '@/components/MetricChart';
 import CalendarEmbed from '@/components/CalendarEmbed';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { DateRange } from 'react-day-picker';
-import { getClientById, getMetricsForClient } from '@/services/mockData';
+import { getMetricasPorCliente } from '@/services/metricsService'
 import { Metric } from '@/types/client';
 import { Instagram, TrendingUp, Eye, Heart, MessageCircle } from 'lucide-react';
 
@@ -22,12 +22,12 @@ const DashboardPage: React.FC = () => {
       try {
         if (user?.clientId) {
           // For client users, fetch their own data
-          const clientMetrics = getMetricsForClient(user.clientId);
+          const clientMetrics = await getMetricasPorCliente(user.clientId);
           setMetrics(clientMetrics);
           setFilteredMetrics(clientMetrics);
         } else if (user?.role === 'admin') {
           // For admin users, fetch a default client (for demo)
-          const clientMetrics = getMetricsForClient('client1');
+          const clientMetrics = await getMetricasPorCliente('client1');
           setMetrics(clientMetrics);
           setFilteredMetrics(clientMetrics);
         }
