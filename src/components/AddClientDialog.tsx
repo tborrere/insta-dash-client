@@ -71,7 +71,8 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       await onSave({
         name,
         email,
-        password, // Added password to the saved data
+        // Only include password if it's a new client or if password was changed
+        ...(password ? { password } : {}),
         instagram_id: instagramId,
         instagram_token: instagramToken,
         logo_url: initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo'
@@ -108,7 +109,10 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
               <Label>Logo do Cliente</Label>
               <LogoUpload
                 currentLogoUrl={initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo'}
-                onLogoUpload={(file) => Promise.resolve(file)}
+                onLogoUpload={(file) => {
+                  // Return a promise that resolves to any value
+                  return Promise.resolve(file);
+                }}
                 clientId={initialData?.id || 'new'}
               />
             </div>

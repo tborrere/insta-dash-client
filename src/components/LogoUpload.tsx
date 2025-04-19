@@ -11,7 +11,7 @@ import { ALLOWED_IMAGE_TYPES, MAX_FILE_SIZE } from '@/lib/constants';
 
 interface LogoUploadProps {
   currentLogoUrl?: string;
-  onLogoUpload: (file: File) => Promise<void>;
+  onLogoUpload: (file: File) => Promise<any>; // Changed return type to be more flexible
   clientId: string;
 }
 
