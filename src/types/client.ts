@@ -9,7 +9,6 @@ export interface Client {
   token_status: 'valid' | 'expired';
   created_at: string;
   logo_url?: string;
-  calendar?: string;
 }
 
 export interface Metric {

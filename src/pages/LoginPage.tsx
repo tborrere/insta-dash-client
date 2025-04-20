@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from "@/components/ui/button";
@@ -12,15 +12,20 @@ import { Shield, User } from 'lucide-react';
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [loginType, setLoginType] = useState('client');
-  const { login, isAuthenticated } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [loginType, setLoginType] = useState('client'); // Default to client login
+  const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (isAuthenticated) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      await login(email, password);
+      
+      // Redirect based on user role
       const savedUser = localStorage.getItem('user');
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
@@ -32,27 +37,15 @@ const LoginPage: React.FC = () => {
       } else {
         navigate('/dashboard');
       }
-    }
-  }, [isAuthenticated, navigate]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError(null);
-    setLoginLoading(true);
-
-    try {
-      console.log('Tentando login com:', { email, password });
-      await login(email, password);
-    } catch (error: any) {
-      console.error('Erro de login:', error);
-      setLoginError(error.message || 'Email ou senha inválidos. Tente novamente.');
+    } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Erro de login",
-        description: error.message || "Email ou senha inválidos. Tente novamente.",
+        description: "Email ou senha inválidos. Tente novamente.",
         variant: "destructive",
       });
     } finally {
-      setLoginLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -99,11 +92,6 @@ const LoginPage: React.FC = () => {
             <TabsContent value="client" className="mt-0">
               <form onSubmit={handleSubmit}>
                 <CardContent className="space-y-4 pt-4">
-                  {loginError && (
-                    <div className="p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-200">
-                      {loginError}
-                    </div>
-                  )}
                   <div className="space-y-2">
                     <Label htmlFor="client-email">Email do Cliente</Label>
                     <Input
@@ -138,9 +126,9 @@ const LoginPage: React.FC = () => {
                   <Button 
                     type="submit" 
                     className="w-full bg-[#021e4a] hover:bg-[#021e4a]/90 text-white" 
-                    disabled={loginLoading}
+                    disabled={isLoading}
                   >
-                    {loginLoading ? (
+                    {isLoading ? (
                       <span className="flex items-center">
                         <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></span>
                         Entrando...
@@ -154,11 +142,6 @@ const LoginPage: React.FC = () => {
             <TabsContent value="admin" className="mt-0">
               <form onSubmit={handleSubmit}>
                 <CardContent className="space-y-4 pt-4">
-                  {loginError && (
-                    <div className="p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-200">
-                      {loginError}
-                    </div>
-                  )}
                   <div className="space-y-2">
                     <Label htmlFor="admin-email">Email de Administrador</Label>
                     <Input
@@ -185,9 +168,9 @@ const LoginPage: React.FC = () => {
                   <Button 
                     type="submit" 
                     className="w-full bg-[#021e4a] hover:bg-[#021e4a]/90 text-white" 
-                    disabled={loginLoading}
+                    disabled={isLoading}
                   >
-                    {loginLoading ? (
+                    {isLoading ? (
                       <span className="flex items-center">
                         <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></span>
                         Entrando...
