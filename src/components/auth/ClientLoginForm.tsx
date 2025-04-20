@@ -24,7 +24,18 @@ const ClientLoginForm: React.FC<ClientLoginFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(email, password);
+    
+    // Remover espaços em branco das extremidades
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+    
+    console.log('Enviando credenciais para login:', {
+      email: trimmedEmail,
+      password: trimmedPassword,
+      passwordLength: trimmedPassword.length
+    });
+    
+    await onSubmit(trimmedEmail, trimmedPassword);
   };
 
   return (

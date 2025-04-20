@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
 import { useToast } from '@/components/ui/use-toast';
 
 type Role = 'admin' | 'client';
@@ -79,11 +78,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Email não encontrado');
       }
       
-      if (data.senha_hash !== password) {
-        console.error('Senha incorreta:', { 
+      // Comparação exata entre as senhas para debug
+      console.log('Senha digitada:', JSON.stringify(password));
+      console.log('Senha no banco:', JSON.stringify(data.senha_hash));
+      console.log('Comparação de senha:', data.senha_hash === password);
+      console.log('Tipo da senha digitada:', typeof password);
+      console.log('Tipo da senha no banco:', typeof data.senha_hash);
+      console.log('Comprimento da senha digitada:', password.length);
+      console.log('Comprimento da senha no banco:', data.senha_hash ? data.senha_hash.length : 'null');
+      
+      // Verificando caracteres um a um para debug
+      if (data.senha_hash && password) {
+        console.log('Comparação caractere a caractere:');
+        const maxLength = Math.max(password.length, data.senha_hash.length);
+        for (let i = 0; i < maxLength; i++) {
+          const pwChar = password[i] || '';
+          const dbChar = data.senha_hash[i] || '';
+          console.log(`Posição ${i}: '${pwChar}' (${pwChar.charCodeAt(0) || 'N/A'}) vs '${dbChar}' (${dbChar.charCodeAt(0) || 'N/A'})`);
+        }
+      }
+      
+      // Usando trim() para remover possíveis espaços em branco
+      const trimmedPassword = password.trim();
+      const trimmedDbPassword = data.senha_hash ? data.senha_hash.trim() : '';
+      
+      if (trimmedDbPassword !== trimmedPassword) {
+        console.error('Senha incorreta após trim:', { 
           email, 
-          senhaDigitada: password, 
-          senhaNoBanco: data?.senha_hash 
+          senhaDigitada: trimmedPassword, 
+          senhaNoBanco: trimmedDbPassword 
         });
         throw new Error('Senha incorreta. Tente novamente.');
       }
