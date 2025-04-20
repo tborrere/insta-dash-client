@@ -11,13 +11,19 @@ interface AuthErrorAlertProps {
 const AuthErrorAlert: React.FC<AuthErrorAlertProps> = ({ error, onDismiss }) => {
   if (!error) return null;
   
+  // Tratar mensagens de erro específicas para exibição amigável
+  let displayError = error;
+  if (error.includes("failed to parse select parameter")) {
+    displayError = "Erro ao conectar com o banco de dados. Por favor, tente novamente ou entre em contato com o suporte.";
+  }
+  
   return (
     <Alert variant="destructive" className="mb-4">
       <AlertCircle className="h-4 w-4" />
       <AlertTitle>Erro de autenticação</AlertTitle>
       <AlertDescription className="flex flex-col">
         <div className="flex justify-between items-center">
-          <span className="font-medium">{error}</span>
+          <span className="font-medium">{displayError}</span>
           {onDismiss && (
             <button 
               onClick={onDismiss}

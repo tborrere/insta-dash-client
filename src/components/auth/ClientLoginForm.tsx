@@ -31,7 +31,6 @@ const ClientLoginForm: React.FC<ClientLoginFormProps> = ({
     
     console.log('Enviando credenciais para login:', {
       email: trimmedEmail,
-      password: trimmedPassword,
       passwordLength: trimmedPassword.length
     });
     

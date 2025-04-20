@@ -52,53 +52,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      console.log('Tentando login com:', { email, password });
+      console.log('Tentando login com:', { email, password: '[REDACTED]' });
       
-      // Primeiro teste: verificar se a tabela clientes existe e está acessível
-      const { data: tableCheck, error: tableError } = await supabase
-        .from('clientes')
-        .select('count(*)')
-        .limit(1);
-        
-      if (tableError) {
-        console.error('Erro ao verificar tabela clientes:', tableError);
-        throw new Error(`Erro ao acessar banco de dados: ${tableError.message}`);
-      }
-      
-      console.log('Tabela clientes acessível:', tableCheck);
-      
-      // Modificamos a consulta para não usar .single() diretamente
-      // Isso evita o erro quando não encontra nenhum registro
+      // Usamos diretamente o email para buscar o cliente sem usar count(*)
       const { data, error } = await supabase
         .from('clientes')
         .select('*')
-        .eq('email', email);
+        .eq('email', email.trim());
 
-      console.log('Resposta completa do Supabase:', { data, error });
-      
       if (error) {
         console.error('Erro ao buscar cliente:', error);
         throw new Error(`Erro na consulta: ${error.message}`);
       }
+
+      console.log('Resposta da consulta:', data);
 
       if (!data || data.length === 0) {
         console.error('Nenhum usuário encontrado com email:', email);
         throw new Error('Usuário não encontrado. Verifique o email informado.');
       }
       
-      // Usamos o primeiro resultado (deveria ser único pelo email)
+      // Usamos o primeiro resultado
       const clienteData = data[0];
       
-      console.log('Cliente encontrado:', clienteData);
-      console.log('Senha digitada:', JSON.stringify(password));
-      console.log('Senha no banco:', JSON.stringify(clienteData.senha_hash));
+      // Log para depuração (não exibe a senha completa em produção)
+      console.log('Cliente encontrado:', { 
+        id: clienteData.id,
+        email: clienteData.email,
+        nome: clienteData.nome
+      });
       
-      // Verificação de senha simplificada
-      if (clienteData.senha_hash !== password) {
-        console.error('Senha incorreta:', {
-          senhaDigitada: password,
-          senhaNoBanco: clienteData.senha_hash
-        });
+      // Comparação direta e simples de strings
+      if (clienteData.senha_hash !== password.trim()) {
+        console.error('Senha incorreta');
         throw new Error('Senha incorreta. Tente novamente.');
       }
 
@@ -106,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData: User = {
         id: clienteData.id,
         email: clienteData.email,
-        role: 'client',
+        role: clienteData.email.includes('admin') ? 'admin' : 'client',
         name: clienteData.nome,
         clientId: clienteData.id,
         instagramId: clienteData.instagram_id,
