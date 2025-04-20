@@ -24,7 +24,17 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(email, password);
+    
+    // Remover espaços em branco das extremidades
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+    
+    console.log('Enviando credenciais para login de admin:', {
+      email: trimmedEmail,
+      passwordLength: trimmedPassword.length
+    });
+    
+    await onSubmit(trimmedEmail, trimmedPassword);
   };
 
   return (
@@ -36,7 +46,7 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({
         />
         
         <div className="space-y-2">
-          <Label htmlFor="admin-email">Email de Administrador</Label>
+          <Label htmlFor="admin-email">Email do Administrador</Label>
           <Input
             id="admin-email"
             type="email"
@@ -48,7 +58,15 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="admin-password">Senha</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="admin-password">Senha</Label>
+            <a 
+              href="#" 
+              className="text-xs text-funillab-cyan hover:underline"
+            >
+              Esqueceu a senha?
+            </a>
+          </div>
           <Input
             id="admin-password"
             type="password"
@@ -70,7 +88,7 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({
               <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></span>
               Entrando...
             </span>
-          ) : "Acessar Painel de Controle"}
+          ) : "Acessar Dashboard"}
         </Button>
       </CardFooter>
     </form>

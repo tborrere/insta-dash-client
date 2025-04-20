@@ -16,6 +16,7 @@ const LoginPage: React.FC = () => {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('client');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -79,7 +80,12 @@ const LoginPage: React.FC = () => {
               </CardDescription>
             </CardHeader>
             
-            <Tabs defaultValue="client" className="w-full">
+            <Tabs 
+              defaultValue="client" 
+              className="w-full"
+              value={activeTab}
+              onValueChange={setActiveTab}
+            >
               <TabsList className="grid grid-cols-2 w-full rounded-none">
                 <TabsTrigger 
                   value="client" 
@@ -126,6 +132,30 @@ const LoginPage: React.FC = () => {
           <p>
             <strong>Cliente:</strong> cliente1@exemplo.com / cliente123
           </p>
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText("cliente1@exemplo.com");
+              toast({ 
+                title: "Copiado!", 
+                description: "Email copiado para a área de transferência" 
+              });
+            }}
+            className="text-xs text-blue-500 hover:underline mt-1 mr-2"
+          >
+            Copiar email
+          </button>
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText("cliente123");
+              toast({ 
+                title: "Copiado!", 
+                description: "Senha copiada para a área de transferência" 
+              });
+            }}
+            className="text-xs text-blue-500 hover:underline mt-1"
+          >
+            Copiar senha
+          </button>
         </div>
       </div>
     </div>

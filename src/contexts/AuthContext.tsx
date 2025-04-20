@@ -54,73 +54,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Tentando login com:', { email, password });
       
-      // Busca o cliente pelo email - com tratamento de erro aprimorado
+      // Primeiro teste: verificar se a tabela clientes existe e está acessível
+      const { data: tableCheck, error: tableError } = await supabase
+        .from('clientes')
+        .select('count(*)')
+        .limit(1);
+        
+      if (tableError) {
+        console.error('Erro ao verificar tabela clientes:', tableError);
+        throw new Error(`Erro ao acessar banco de dados: ${tableError.message}`);
+      }
+      
+      console.log('Tabela clientes acessível:', tableCheck);
+      
+      // Modificamos a consulta para não usar .single() diretamente
+      // Isso evita o erro quando não encontra nenhum registro
       const { data, error } = await supabase
         .from('clientes')
         .select('*')
-        .eq('email', email)
-        .single();
+        .eq('email', email);
 
-      console.log('Dados retornados pelo Supabase:', data);
+      console.log('Resposta completa do Supabase:', { data, error });
       
       if (error) {
         console.error('Erro ao buscar cliente:', error);
-        
-        // Mensagem de erro mais detalhada
-        if (error.code === 'PGRST116') {
-          throw new Error('Usuário não encontrado. Verifique o email informado.');
-        } else {
-          throw new Error(`Erro na autenticação: ${error.message}`);
-        }
+        throw new Error(`Erro na consulta: ${error.message}`);
       }
 
-      if (!data) {
-        throw new Error('Email não encontrado');
+      if (!data || data.length === 0) {
+        console.error('Nenhum usuário encontrado com email:', email);
+        throw new Error('Usuário não encontrado. Verifique o email informado.');
       }
       
-      // Comparação exata entre as senhas para debug
+      // Usamos o primeiro resultado (deveria ser único pelo email)
+      const clienteData = data[0];
+      
+      console.log('Cliente encontrado:', clienteData);
       console.log('Senha digitada:', JSON.stringify(password));
-      console.log('Senha no banco:', JSON.stringify(data.senha_hash));
-      console.log('Comparação de senha:', data.senha_hash === password);
-      console.log('Tipo da senha digitada:', typeof password);
-      console.log('Tipo da senha no banco:', typeof data.senha_hash);
-      console.log('Comprimento da senha digitada:', password.length);
-      console.log('Comprimento da senha no banco:', data.senha_hash ? data.senha_hash.length : 'null');
+      console.log('Senha no banco:', JSON.stringify(clienteData.senha_hash));
       
-      // Verificando caracteres um a um para debug
-      if (data.senha_hash && password) {
-        console.log('Comparação caractere a caractere:');
-        const maxLength = Math.max(password.length, data.senha_hash.length);
-        for (let i = 0; i < maxLength; i++) {
-          const pwChar = password[i] || '';
-          const dbChar = data.senha_hash[i] || '';
-          console.log(`Posição ${i}: '${pwChar}' (${pwChar.charCodeAt(0) || 'N/A'}) vs '${dbChar}' (${dbChar.charCodeAt(0) || 'N/A'})`);
-        }
-      }
-      
-      // Usando trim() para remover possíveis espaços em branco
-      const trimmedPassword = password.trim();
-      const trimmedDbPassword = data.senha_hash ? data.senha_hash.trim() : '';
-      
-      if (trimmedDbPassword !== trimmedPassword) {
-        console.error('Senha incorreta após trim:', { 
-          email, 
-          senhaDigitada: trimmedPassword, 
-          senhaNoBanco: trimmedDbPassword 
+      // Verificação de senha simplificada
+      if (clienteData.senha_hash !== password) {
+        console.error('Senha incorreta:', {
+          senhaDigitada: password,
+          senhaNoBanco: clienteData.senha_hash
         });
         throw new Error('Senha incorreta. Tente novamente.');
       }
 
       // Cria objeto de usuário autenticado
       const userData: User = {
-        id: data.id,
-        email: data.email,
+        id: clienteData.id,
+        email: clienteData.email,
         role: 'client',
-        name: data.nome,
-        clientId: data.id,
-        instagramId: data.instagram_id,
-        logo: data.logo_url,
-        calendar: data.calendar_url,
+        name: clienteData.nome,
+        clientId: clienteData.id,
+        instagramId: clienteData.instagram_id,
+        logo: clienteData.logo_url,
+        calendar: clienteData.calendar_url,
       };
 
       // Atualiza o estado e salva no localStorage
