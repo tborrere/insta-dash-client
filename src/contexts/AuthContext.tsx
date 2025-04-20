@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 type Role = 'admin' | 'client';
 
@@ -31,6 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Verificar se há usuário salvo no localStorage
@@ -53,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Tentando login com:', { email, password });
       
-      // Busca o cliente pelo email
+      // Busca o cliente pelo email - com tratamento de erro aprimorado
       const { data, error } = await supabase
         .from('clientes')
         .select('*')
@@ -64,16 +66,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         console.error('Erro ao buscar cliente:', error);
-        throw new Error('Email ou senha inválidos');
+        
+        // Mensagem de erro mais detalhada
+        if (error.code === 'PGRST116') {
+          throw new Error('Usuário não encontrado. Verifique o email informado.');
+        } else {
+          throw new Error(`Erro na autenticação: ${error.message}`);
+        }
       }
 
-      if (!data || data.senha_hash !== password) {
-        console.error('Credenciais inválidas:', { 
+      if (!data) {
+        throw new Error('Email não encontrado');
+      }
+      
+      if (data.senha_hash !== password) {
+        console.error('Senha incorreta:', { 
           email, 
           senhaDigitada: password, 
           senhaNoBanco: data?.senha_hash 
         });
-        throw new Error('Email ou senha inválidos');
+        throw new Error('Senha incorreta. Tente novamente.');
       }
 
       // Cria objeto de usuário autenticado
@@ -101,6 +113,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     } catch (error: any) {
       console.error('Erro durante login:', error);
+      toast({
+        title: "Erro de login",
+        description: error.message || "Ocorreu um erro durante o login",
+        variant: "destructive",
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -112,6 +129,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(false);
     localStorage.removeItem('user');
     console.log('Logout realizado');
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso",
+    });
   };
 
   const isAdmin = () => user?.role === 'admin';
