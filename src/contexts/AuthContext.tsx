@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/use-toast';
 
 type Role = 'admin' | 'client';
 
@@ -31,7 +31,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Verificar se há usuário salvo no localStorage
@@ -52,52 +51,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      console.log('Tentando login com:', { email, password: '[REDACTED]' });
+      console.log('Tentando login com:', { email, password });
       
-      // Usamos diretamente o email para buscar o cliente sem usar count(*)
+      // Busca o cliente pelo email
       const { data, error } = await supabase
         .from('clientes')
         .select('*')
-        .eq('email', email.trim());
+        .eq('email', email)
+        .single();
 
+      console.log('Dados retornados pelo Supabase:', data);
+      
       if (error) {
         console.error('Erro ao buscar cliente:', error);
-        throw new Error(`Erro na consulta: ${error.message}`);
+        throw new Error('Email ou senha inválidos');
       }
 
-      console.log('Resposta da consulta:', data);
-
-      if (!data || data.length === 0) {
-        console.error('Nenhum usuário encontrado com email:', email);
-        throw new Error('Usuário não encontrado. Verifique o email informado.');
-      }
-      
-      // Usamos o primeiro resultado
-      const clienteData = data[0];
-      
-      // Log para depuração (não exibe a senha completa em produção)
-      console.log('Cliente encontrado:', { 
-        id: clienteData.id,
-        email: clienteData.email,
-        nome: clienteData.nome
-      });
-      
-      // Comparação direta e simples de strings
-      if (clienteData.senha_hash !== password.trim()) {
-        console.error('Senha incorreta');
-        throw new Error('Senha incorreta. Tente novamente.');
+      if (!data || data.senha_hash !== password) {
+        console.error('Credenciais inválidas:', { 
+          email, 
+          senhaDigitada: password, 
+          senhaNoBanco: data?.senha_hash 
+        });
+        throw new Error('Email ou senha inválidos');
       }
 
       // Cria objeto de usuário autenticado
       const userData: User = {
-        id: clienteData.id,
-        email: clienteData.email,
-        role: clienteData.email.includes('admin') ? 'admin' : 'client',
-        name: clienteData.nome,
-        clientId: clienteData.id,
-        instagramId: clienteData.instagram_id,
-        logo: clienteData.logo_url,
-        calendar: clienteData.calendar_url,
+        id: data.id,
+        email: data.email,
+        role: 'client',
+        name: data.nome,
+        clientId: data.id,
+        instagramId: data.instagram_id,
+        logo: data.logo_url,
+        calendar: data.calendar_url,
       };
 
       // Atualiza o estado e salva no localStorage
@@ -113,11 +101,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     } catch (error: any) {
       console.error('Erro durante login:', error);
-      toast({
-        title: "Erro de login",
-        description: error.message || "Ocorreu um erro durante o login",
-        variant: "destructive",
-      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -129,10 +112,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(false);
     localStorage.removeItem('user');
     console.log('Logout realizado');
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso",
-    });
   };
 
   const isAdmin = () => user?.role === 'admin';
