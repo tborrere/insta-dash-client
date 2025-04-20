@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,7 +14,7 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [loginType, setLoginType] = useState('client'); // Default to client login
+  const [activeTab, setActiveTab] = useState('client'); // Default to client login
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -37,11 +38,16 @@ const LoginPage: React.FC = () => {
       } else {
         navigate('/dashboard');
       }
-    } catch (error) {
+      
+      toast({
+        title: "Login bem-sucedido",
+        description: "Você está conectado agora.",
+      });
+    } catch (error: any) {
       console.error('Login error:', error);
       toast({
         title: "Erro de login",
-        description: "Email ou senha inválidos. Tente novamente.",
+        description: error.message || "Email ou senha inválidos. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -71,7 +77,7 @@ const LoginPage: React.FC = () => {
             </CardDescription>
           </CardHeader>
           
-          <Tabs defaultValue="client" className="w-full">
+          <Tabs defaultValue="client" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-2 w-full rounded-none">
               <TabsTrigger 
                 value="client" 

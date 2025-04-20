@@ -1,6 +1,7 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { AuthState, User } from '../types/auth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
@@ -16,7 +17,7 @@ const initialAuthState: AuthState = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demo purposes - In a real app, this would come from your backend
+// Mock users para demonstração (vamos usar em caso de falha na autenticação com Supabase)
 const MOCK_USERS = [
   {
     id: '1',
@@ -49,72 +50,159 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authState, setAuthState] = useState<AuthState>(initialAuthState);
 
   useEffect(() => {
-    // Check for saved session on app load
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser) as User;
-        setAuthState({
-          user: parsedUser,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-      } catch (error) {
-        console.error('Failed to parse saved user:', error);
-        localStorage.removeItem('user');
-        setAuthState({
-          ...initialAuthState,
-          isLoading: false,
-        });
-      }
-    } else {
-      setAuthState({
-        ...initialAuthState,
-        isLoading: false,
-      });
-    }
-  }, []);
-
-  const login = async (email: string, password: string) => {
-    // In a real app, this would be an API call to your backend
-    return new Promise<void>((resolve, reject) => {
-      // Simulate API delay
-      setTimeout(() => {
-        const user = MOCK_USERS.find(
-          (u) => u.email === email && u.password === password
-        );
-
-        if (user) {
-          // Remove password from user object
-          const { password: _, ...userWithoutPassword } = user;
+    // Configurar o listener de mudança de estado de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          // Usuário autenticado
+          const { user } = session;
           
-          // Update authentication state
+          // Aqui assumimos que o usuário é cliente por padrão
+          // Em uma implementação real, você consultaria o perfil do usuário para determinar a função
+          const userWithRole: User = {
+            id: user.id,
+            email: user.email || '',
+            name: user.user_metadata.name || user.email?.split('@')[0] || 'Usuário',
+            role: user.email?.includes('admin') ? 'admin' : 'client',
+            clientId: user.id, // temporário, assumindo que id do usuário é o mesmo do cliente
+          };
+          
           setAuthState({
-            user: userWithoutPassword,
+            user: userWithRole,
             isAuthenticated: true,
             isLoading: false,
           });
           
-          // Save to localStorage (in a real app, would use secure cookies/tokens)
-          localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-          resolve();
+          // Salvar no localStorage para persistência de sessão
+          localStorage.setItem('user', JSON.stringify(userWithRole));
         } else {
-          reject(new Error('Email ou senha inválidos'));
+          // Usuário não autenticado
+          setAuthState({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+          localStorage.removeItem('user');
         }
-      }, 500);
+      }
+    );
+
+    // Verificar se há uma sessão existente
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        const { user } = session;
+        
+        // Aqui assumimos que o usuário é cliente por padrão
+        const userWithRole: User = {
+          id: user.id,
+          email: user.email || '',
+          name: user.user_metadata.name || user.email?.split('@')[0] || 'Usuário',
+          role: user.email?.includes('admin') ? 'admin' : 'client',
+          clientId: user.id,
+        };
+        
+        setAuthState({
+          user: userWithRole,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        
+        localStorage.setItem('user', JSON.stringify(userWithRole));
+      } else {
+        // Verificar se existe um usuário salvo no localStorage
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+          try {
+            const parsedUser = JSON.parse(savedUser) as User;
+            setAuthState({
+              user: parsedUser,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+          } catch (error) {
+            console.error('Falha ao analisar o usuário salvo:', error);
+            localStorage.removeItem('user');
+            setAuthState({
+              ...initialAuthState,
+              isLoading: false,
+            });
+          }
+        } else {
+          setAuthState({
+            ...initialAuthState,
+            isLoading: false,
+          });
+        }
+      }
     });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    try {
+      // Primeiro tenta autenticar com Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      // A autenticação foi bem-sucedida e o onAuthStateChange cuidará da atualização do estado
+      return;
+    } catch (supabaseError) {
+      console.warn('Falha na autenticação com Supabase, tentando autenticação simulada:', supabaseError);
+      
+      // Fallback para autenticação simulada
+      return new Promise<void>((resolve, reject) => {
+        // Simular atraso de API
+        setTimeout(() => {
+          const user = MOCK_USERS.find(
+            (u) => u.email === email && u.password === password
+          );
+
+          if (user) {
+            // Remove password from user object
+            const { password: _, ...userWithoutPassword } = user;
+            
+            // Update authentication state
+            setAuthState({
+              user: userWithoutPassword,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+            resolve();
+          } else {
+            reject(new Error('Email ou senha inválidos'));
+          }
+        }, 500);
+      });
+    }
   };
 
-  const logout = () => {
-    // Clear authentication state
-    setAuthState({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
-    });
-    
-    // Remove from localStorage
-    localStorage.removeItem('user');
+  const logout = async () => {
+    try {
+      // Tenta fazer logout do Supabase
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.warn('Erro ao fazer logout do Supabase:', error);
+    } finally {
+      // Limpar o estado de autenticação local independentemente do resultado
+      setAuthState({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+      
+      // Remover do localStorage
+      localStorage.removeItem('user');
+    }
   };
 
   const isAdmin = () => {
