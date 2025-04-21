@@ -13,17 +13,17 @@ export type Database = {
         Row: {
           email: string
           id: string
-          senha_hash: string | null
+          senha: string
         }
         Insert: {
           email: string
           id?: string
-          senha_hash?: string | null
+          senha: string
         }
         Update: {
           email?: string
           id?: string
-          senha_hash?: string | null
+          senha?: string
         }
         Relationships: []
       }

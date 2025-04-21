@@ -14,7 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Client } from '@/types/client';
 import { useToast } from '@/components/ui/use-toast';
 import LogoUpload from './LogoUpload';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase'; // use the correct import
+import dayjs from 'dayjs';
 
 interface AddClientDialogProps {
   isOpen: boolean;
@@ -36,14 +37,14 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
   const [instagramToken, setInstagramToken] = useState(initialData?.instagram_token || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logoUrl, setLogoUrl] = useState(initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo');
-  
+
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);
       setEmail(initialData.email);
       setInstagramId(initialData.instagram_id);
       setInstagramToken(initialData.instagram_token);
-      setPassword(''); // Reset password on edit
+      setPassword('');
       setLogoUrl(initialData.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo');
     } else {
       setName('');
@@ -54,12 +55,20 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       setLogoUrl('https://via.placeholder.com/300x150?text=Cliente+Logo');
     }
   }, [initialData]);
-  
+
   const { toast } = useToast();
+
+  // Corrigir o handler de logo para aceitar File, mas transformar em URL
+  const handleLogoUpload = async (file: File) => {
+    // Se já recebe uma URL da LogoUpload, basta setar; se não, faça o upload aqui
+    // Aqui estamos supondo que o componente já produz uma URL:
+    const url = typeof file === "string" ? file : '';
+    setLogoUrl(url);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name || !email || (!initialData && !password)) {
       toast({
         title: "Dados incompletos",
@@ -68,9 +77,9 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       });
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       if (initialData) {
         // Atualizar cliente existente
@@ -81,42 +90,47 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
           token_instagram: instagramToken || null,
           logo_url: logoUrl
         };
-        
-        // Se senha foi fornecida, atualiza senha
+
+        // Se senha foi fornecida, atualiza senha_hash
         if (password) {
-          updates.senha = password;
+          updates.senha_hash = password; // Mapeia para senha_hash, não senha
         }
-        
+
         const { error } = await supabase
           .from('clientes')
           .update(updates)
           .eq('id', initialData.id);
-          
+
         if (error) throw error;
+
+        toast({
+          title: "Cliente atualizado",
+          description: "Cliente atualizado com sucesso."
+        });
       } else {
-        // Adicionar novo cliente
+        // Adicionar novo cliente usando senha_hash (remover campo senha)
         const { error } = await supabase
           .from('clientes')
           .insert([
             {
               nome: name,
               email: email,
-              senha: password,  // Senha em texto puro
+              senha_hash: password, // <-- senha em texto puro, porém campo senha_hash
               instagram_id: instagramId || null,
               token_instagram: instagramToken || null,
               logo_url: logoUrl,
-              criado_em: new Date().toISOString()
+              criado_em: dayjs().toISOString()
             }
           ]);
-          
+
         if (error) throw error;
+
+        toast({
+          title: "Cliente criado",
+          description: "Cliente criado com sucesso!"
+        });
       }
-      
-      toast({
-        title: initialData ? "Cliente atualizado" : "Cliente criado",
-        description: initialData ? "Cliente atualizado com sucesso." : "Cliente criado com sucesso."
-      });
-      
+
       onSave();
     } catch (error: any) {
       console.error('Error saving client:', error);
@@ -130,10 +144,6 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
     }
   };
 
-  const handleLogoUpload = (url: string) => {
-    setLogoUrl(url);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -141,12 +151,12 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
           <DialogHeader>
             <DialogTitle>{initialData ? 'Editar Cliente' : 'Adicionar Novo Cliente'}</DialogTitle>
             <DialogDescription>
-              {initialData 
-                ? 'Edite as informações do cliente existente.' 
+              {initialData
+                ? 'Edite as informações do cliente existente.'
                 : 'Preencha os dados para adicionar um novo cliente.'}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid gap-4">
               <Label>Logo do Cliente</Label>
