@@ -36,7 +36,6 @@ export type Database = {
           email: string
           id: string
           instagram_id: string | null
-          logo_url: string | null
           nome: string
           notion_url: string | null
           senha_hash: string | null
@@ -50,7 +49,6 @@ export type Database = {
           email: string
           id?: string
           instagram_id?: string | null
-          logo_url?: string | null
           nome: string
           notion_url?: string | null
           senha_hash?: string | null
@@ -64,7 +62,6 @@ export type Database = {
           email?: string
           id?: string
           instagram_id?: string | null
-          logo_url?: string | null
           nome?: string
           notion_url?: string | null
           senha_hash?: string | null

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
@@ -6,7 +7,7 @@ import MetricChart from '@/components/MetricChart';
 import CalendarEmbed from '@/components/CalendarEmbed';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { DateRange } from 'react-day-picker';
-import { getClientById, getMetricsForClient } from '@/services/mockData';
+import { fetchClientInfo, fetchMetricsForClient } from '@/services/supabaseClient';
 import { Metric } from '@/types/client';
 import { HardDrive, FileText, Megaphone } from 'lucide-react';
 
@@ -16,21 +17,31 @@ const DashboardPage: React.FC = () => {
   const [filteredMetrics, setFilteredMetrics] = useState<Metric[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [clientInfo, setClientInfo] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (user?.clientId) {
-          const clientMetrics = getMetricsForClient(user.clientId);
+          // Fetch client info from Supabase
+          const client = await fetchClientInfo(user.clientId);
+          setClientInfo(client);
+          
+          // Fetch metrics from Supabase
+          const clientMetrics = await fetchMetricsForClient(user.clientId);
           setMetrics(clientMetrics);
           setFilteredMetrics(clientMetrics);
         } else if (user?.role === 'admin') {
-          const clientMetrics = getMetricsForClient('client1');
+          // For admin users, show a default client's data
+          const client = await fetchClientInfo('client1');
+          setClientInfo(client);
+          
+          const clientMetrics = await fetchMetricsForClient('client1');
           setMetrics(clientMetrics);
           setFilteredMetrics(clientMetrics);
         }
       } catch (error) {
-        console.error('Error fetching metrics:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setIsLoading(false);
       }
@@ -91,11 +102,10 @@ const DashboardPage: React.FC = () => {
     );
   }
 
-  const clientInfo = user?.clientId ? getClientById(user.clientId) : null;
   const displayName = clientInfo?.name || user?.name || '';
-  const driveUrl = (clientInfo as any)?.drive_url;
-  const notionUrl = (clientInfo as any)?.notion_url;
-  const anunciosUrl = (clientInfo as any)?.anuncios_url;
+  const driveUrl = clientInfo?.drive_url;
+  const notionUrl = clientInfo?.notion_url;
+  const anunciosUrl = clientInfo?.anuncios_url;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -120,7 +130,6 @@ const DashboardPage: React.FC = () => {
                   tabIndex={driveUrl ? undefined : -1}
                   aria-disabled={!driveUrl}
                   onClick={!driveUrl ? (e) => e.preventDefault() : undefined}
-                  style={!driveUrl ? { pointerEvents: 'none', opacity: 0.5 } : {}}
                 >
                   <span className="mr-2">
                     <HardDrive className="h-5 w-5" />
@@ -136,7 +145,6 @@ const DashboardPage: React.FC = () => {
                   tabIndex={notionUrl ? undefined : -1}
                   aria-disabled={!notionUrl}
                   onClick={!notionUrl ? (e) => e.preventDefault() : undefined}
-                  style={!notionUrl ? { pointerEvents: 'none', opacity: 0.5 } : {}}
                 >
                   <span className="mr-2">
                     <FileText className="h-5 w-5" />
@@ -152,7 +160,6 @@ const DashboardPage: React.FC = () => {
                   tabIndex={anunciosUrl ? undefined : -1}
                   aria-disabled={!anunciosUrl}
                   onClick={!anunciosUrl ? (e) => e.preventDefault() : undefined}
-                  style={!anunciosUrl ? { pointerEvents: 'none', opacity: 0.5 } : {}}
                 >
                   <span className="mr-2">
                     <Megaphone className="h-5 w-5" />
