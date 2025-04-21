@@ -8,10 +8,7 @@ export interface Client {
   instagram_token: string;
   token_status: 'valid' | 'expired';
   created_at: string;
-  drive_url?: string;
-  notion_url?: string;
-  anuncios_url?: string;
-  calendar_url?: string;
+  logo_url?: string;
 }
 
 export interface Metric {
