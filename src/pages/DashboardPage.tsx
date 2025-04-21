@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
@@ -22,12 +21,10 @@ const DashboardPage: React.FC = () => {
     const fetchData = async () => {
       try {
         if (user?.clientId) {
-          // For client users, fetch their own data
           const clientMetrics = getMetricsForClient(user.clientId);
           setMetrics(clientMetrics);
           setFilteredMetrics(clientMetrics);
         } else if (user?.role === 'admin') {
-          // For admin users, fetch a default client (for demo)
           const clientMetrics = getMetricsForClient('client1');
           setMetrics(clientMetrics);
           setFilteredMetrics(clientMetrics);
@@ -42,7 +39,6 @@ const DashboardPage: React.FC = () => {
     fetchData();
   }, [user]);
 
-  // Filter metrics when date range changes
   useEffect(() => {
     if (!dateRange?.from) {
       setFilteredMetrics(metrics);
@@ -52,14 +48,11 @@ const DashboardPage: React.FC = () => {
     const filtered = metrics.filter(metric => {
       const metricDate = new Date(metric.date);
       
-      // If only start date is selected
       if (dateRange.from && !dateRange.to) {
         return metricDate >= dateRange.from;
       }
       
-      // If both dates are selected
       if (dateRange.from && dateRange.to) {
-        // Add one day to end date to include the end date in the range
         const endDate = new Date(dateRange.to);
         endDate.setDate(endDate.getDate() + 1);
         return metricDate >= dateRange.from && metricDate < endDate;
@@ -71,15 +64,12 @@ const DashboardPage: React.FC = () => {
     setFilteredMetrics(filtered);
   }, [dateRange, metrics]);
 
-  // Get the latest metrics data
   const latestMetrics = filteredMetrics.length > 0 ? filteredMetrics[filteredMetrics.length - 1] : null;
   
-  // Calculate growth trends (for demonstration)
   const calculateTrend = (current: number, previous: number): number => {
     return previous ? Math.round(((current - previous) / previous) * 100) : 0;
   };
 
-  // Get trends by comparing the latest data with data from a week ago
   const trendIndex = filteredMetrics.length > 7 ? filteredMetrics.length - 8 : 0;
   const previousMetrics = filteredMetrics[trendIndex];
   
@@ -123,12 +113,13 @@ const DashboardPage: React.FC = () => {
               </div>
               <div className="flex gap-2">
                 <a
-                  href={driveUrl || undefined}
+                  href={driveUrl || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!driveUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
                   tabIndex={driveUrl ? undefined : -1}
                   aria-disabled={!driveUrl}
+                  onClick={!driveUrl ? (e) => e.preventDefault() : undefined}
                   style={!driveUrl ? { pointerEvents: 'none', opacity: 0.5 } : {}}
                 >
                   <span className="mr-2">
@@ -136,13 +127,15 @@ const DashboardPage: React.FC = () => {
                   </span>
                   DRIVE
                 </a>
+                
                 <a
-                  href={notionUrl || undefined}
+                  href={notionUrl || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!notionUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
                   tabIndex={notionUrl ? undefined : -1}
                   aria-disabled={!notionUrl}
+                  onClick={!notionUrl ? (e) => e.preventDefault() : undefined}
                   style={!notionUrl ? { pointerEvents: 'none', opacity: 0.5 } : {}}
                 >
                   <span className="mr-2">
@@ -150,13 +143,15 @@ const DashboardPage: React.FC = () => {
                   </span>
                   NOTION
                 </a>
+                
                 <a
-                  href={anunciosUrl || undefined}
+                  href={anunciosUrl || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!anunciosUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
                   tabIndex={anunciosUrl ? undefined : -1}
                   aria-disabled={!anunciosUrl}
+                  onClick={!anunciosUrl ? (e) => e.preventDefault() : undefined}
                   style={!anunciosUrl ? { pointerEvents: 'none', opacity: 0.5 } : {}}
                 >
                   <span className="mr-2">
@@ -169,12 +164,10 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Google Calendar Integration */}
         <CalendarEmbed 
           calendarUrl="https://calendar.google.com/calendar/embed?src=tborrere%40gmail.com&ctz=America%2FSao_Paulo" 
         />
 
-        {/* Date Range Picker - Now placed below the calendar */}
         <div className="mb-8 flex justify-end">
           <DateRangePicker 
             dateRange={dateRange}
@@ -183,7 +176,6 @@ const DashboardPage: React.FC = () => {
           />
         </div>
 
-        {/* Overview cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <MetricCard
             title="Alcance"
@@ -214,7 +206,6 @@ const DashboardPage: React.FC = () => {
           />
         </div>
 
-        {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <MetricChart 
             title="Crescimento de Seguidores" 
