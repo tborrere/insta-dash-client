@@ -1,52 +1,54 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ClientsTable from '@/components/ClientsTable';
 import AddClientDialog from '@/components/AddClientDialog';
 import SupabaseSetupGuide from '@/components/SupabaseSetupGuide';
 import { useToast } from '@/components/ui/use-toast';
 import { Users, Database, Key } from 'lucide-react';
 import { Client } from '@/types/client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { listAllClients } from '@/services/supabaseClient';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const AdminPage: React.FC = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<string | null>(null);
 
-  // Mock clients data for development
-  const mockClients: Client[] = [
-    {
-      id: '1',
-      name: 'Cliente Exemplo 1',
-      email: 'cliente1@exemplo.com',
-      instagram_id: 'cliente1_insta',
-      instagram_token: 'token123',
-      token_status: 'valid',
-      created_at: '2025-03-15T10:00:00Z',
-      logo_url: 'https://via.placeholder.com/150'
-    },
-    {
-      id: '2',
-      name: 'Cliente Exemplo 2',
-      email: 'cliente2@exemplo.com',
-      instagram_id: 'cliente2_insta',
-      instagram_token: 'token456',
-      token_status: 'expired',
-      created_at: '2025-02-10T10:00:00Z'
-    }
-  ];
+  // Fetch clients using React Query
+  const { data: clients = [], isLoading, error } = useQuery({
+    queryKey: ['clients'],
+    queryFn: listAllClients
+  });
+
+  // Handle refresh when the component mounts or after operations
+  const refreshClients = () => {
+    queryClient.invalidateQueries({ queryKey: ['clients'] });
+  };
 
   const handleAddClient = () => {
     setIsAddClientDialogOpen(false);
-    toast({
-      title: "Cliente adicionado",
-      description: "O novo cliente foi adicionado com sucesso.",
-    });
+    setSelectedClient(null);
+    refreshClients();
   };
 
   const handleEditClient = (client: Client) => {
@@ -54,21 +56,52 @@ const AdminPage: React.FC = () => {
     setIsAddClientDialogOpen(true);
   };
 
-  const handleDeleteClient = (clientId: string) => {
-    // In a real app, this would call an API to delete the client
-    toast({
-      title: "Cliente removido",
-      description: "O cliente foi removido com sucesso.",
-    });
+  const openDeleteDialog = (clientId: string) => {
+    setClientToDelete(clientId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteClient = async () => {
+    if (!clientToDelete) return;
+    
+    try {
+      const { error } = await supabase
+        .from('clientes')
+        .delete()
+        .eq('id', clientToDelete);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Cliente removido",
+        description: "O cliente foi removido com sucesso.",
+      });
+      
+      refreshClients();
+    } catch (error: any) {
+      console.error('Error deleting client:', error);
+      toast({
+        title: "Erro ao remover cliente",
+        description: error.message || "Ocorreu um erro ao tentar remover o cliente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setClientToDelete(null);
+    }
   };
 
   const handleViewMetrics = (clientId: string) => {
-    // In a real app, this would navigate to the client's metrics page
-    toast({
-      title: "Visualizando métricas",
-      description: `Redirecionando para métricas do cliente ID: ${clientId}`,
-    });
+    navigate(`/dashboard?client=${clientId}`);
   };
+
+  // Check if role is admin, if not redirect to login
+  React.useEffect(() => {
+    const role = localStorage.getItem('role');
+    if (role !== 'admin') {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -120,12 +153,22 @@ const AdminPage: React.FC = () => {
             </div>
             <Card>
               <CardContent className="p-0">
-                <ClientsTable 
-                  clients={mockClients} 
-                  onViewMetrics={handleViewMetrics}
-                  onEdit={handleEditClient}
-                  onDelete={handleDeleteClient}
-                />
+                {isLoading ? (
+                  <div className="flex justify-center items-center p-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-funillab-blue"></div>
+                  </div>
+                ) : error ? (
+                  <div className="p-4 text-center text-red-500">
+                    Erro ao carregar clientes. Por favor, tente novamente.
+                  </div>
+                ) : (
+                  <ClientsTable 
+                    clients={clients} 
+                    onViewMetrics={handleViewMetrics}
+                    onEdit={handleEditClient}
+                    onDelete={openDeleteDialog}
+                  />
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -165,6 +208,24 @@ const AdminPage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Confirmation dialog for deleting clients */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. O cliente e todos os seus dados serão permanentemente excluídos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteClient} className="bg-red-500 hover:bg-red-600">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -123,3 +123,64 @@ export const listAllClients = async () => {
     logo_url: client.logo_url
   })) as Client[];
 };
+
+export const createClient = async (clientData: {
+  nome: string;
+  email: string;
+  senha: string;
+  instagram_id?: string | null;
+  token_instagram?: string | null;
+  logo_url?: string | null;
+}) => {
+  const { data, error } = await supabase
+    .from('clientes')
+    .insert([clientData])
+    .select()
+    .single();
+    
+  if (error) throw error;
+  
+  return {
+    id: data.id,
+    name: data.nome,
+    email: data.email,
+    instagram_id: data.instagram_id || '',
+    instagram_token: data.token_instagram || '',
+    token_status: data.token_instagram ? 'valid' : 'expired',
+    created_at: data.criado_em || new Date().toISOString(),
+    logo_url: data.logo_url
+  } as Client;
+};
+
+export const updateClient = async (clientId: string, updates: any) => {
+  const { data, error } = await supabase
+    .from('clientes')
+    .update(updates)
+    .eq('id', clientId)
+    .select()
+    .single();
+    
+  if (error) throw error;
+  
+  return {
+    id: data.id,
+    name: data.nome,
+    email: data.email,
+    instagram_id: data.instagram_id || '',
+    instagram_token: data.token_instagram || '',
+    token_status: data.token_instagram ? 'valid' : 'expired',
+    created_at: data.criado_em || new Date().toISOString(),
+    logo_url: data.logo_url
+  } as Client;
+};
+
+export const deleteClient = async (clientId: string) => {
+  const { error } = await supabase
+    .from('clientes')
+    .delete()
+    .eq('id', clientId);
+    
+  if (error) throw error;
+  
+  return true;
+};

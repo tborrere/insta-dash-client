@@ -14,11 +14,12 @@ import { Label } from "@/components/ui/label";
 import { Client } from '@/types/client';
 import { useToast } from '@/components/ui/use-toast';
 import LogoUpload from './LogoUpload';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AddClientDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (client: Omit<Client, 'id' | 'created_at' | 'token_status'>) => void;
+  onSave: () => void;
   initialData?: Client;
 }
 
@@ -34,6 +35,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
   const [instagramId, setInstagramId] = useState(initialData?.instagram_id || '');
   const [instagramToken, setInstagramToken] = useState(initialData?.instagram_token || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [logoUrl, setLogoUrl] = useState(initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo');
   
   useEffect(() => {
     if (initialData) {
@@ -42,12 +44,14 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       setInstagramId(initialData.instagram_id);
       setInstagramToken(initialData.instagram_token);
       setPassword(''); // Reset password on edit
+      setLogoUrl(initialData.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo');
     } else {
       setName('');
       setEmail('');
       setPassword('');
       setInstagramId('');
       setInstagramToken('');
+      setLogoUrl('https://via.placeholder.com/300x150?text=Cliente+Logo');
     }
   }, [initialData]);
   
@@ -56,10 +60,10 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !email || !instagramId || !instagramToken || (!initialData && !password)) {
+    if (!name || !email || (!initialData && !password)) {
       toast({
         title: "Dados incompletos",
-        description: "Preencha todos os campos obrigatórios.",
+        description: "Preencha os campos obrigatórios (nome, email, senha).",
         variant: "destructive",
       });
       return;
@@ -68,27 +72,66 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
     setIsSubmitting(true);
     
     try {
-      await onSave({
-        name,
-        email,
-        // Only include password if it's a new client or if password was changed
-        ...(password ? { password } : {}),
-        instagram_id: instagramId,
-        instagram_token: instagramToken,
-        logo_url: initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo'
+      if (initialData) {
+        // Atualizar cliente existente
+        const updates: any = {
+          nome: name,
+          email: email,
+          instagram_id: instagramId || null,
+          token_instagram: instagramToken || null,
+          logo_url: logoUrl
+        };
+        
+        // Se senha foi fornecida, atualiza senha
+        if (password) {
+          updates.senha = password;
+        }
+        
+        const { error } = await supabase
+          .from('clientes')
+          .update(updates)
+          .eq('id', initialData.id);
+          
+        if (error) throw error;
+      } else {
+        // Adicionar novo cliente
+        const { error } = await supabase
+          .from('clientes')
+          .insert([
+            {
+              nome: name,
+              email: email,
+              senha: password,  // Senha em texto puro
+              instagram_id: instagramId || null,
+              token_instagram: instagramToken || null,
+              logo_url: logoUrl,
+              criado_em: new Date().toISOString()
+            }
+          ]);
+          
+        if (error) throw error;
+      }
+      
+      toast({
+        title: initialData ? "Cliente atualizado" : "Cliente criado",
+        description: initialData ? "Cliente atualizado com sucesso." : "Cliente criado com sucesso."
       });
       
-      onClose();
-    } catch (error) {
+      onSave();
+    } catch (error: any) {
       console.error('Error saving client:', error);
       toast({
         title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar os dados do cliente.",
+        description: error.message || "Ocorreu um erro ao salvar os dados do cliente.",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleLogoUpload = (url: string) => {
+    setLogoUrl(url);
   };
 
   return (
@@ -108,11 +151,8 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
             <div className="grid gap-4">
               <Label>Logo do Cliente</Label>
               <LogoUpload
-                currentLogoUrl={initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo'}
-                onLogoUpload={(file) => {
-                  // Return a promise that resolves to any value
-                  return Promise.resolve(file);
-                }}
+                currentLogoUrl={logoUrl}
+                onLogoUpload={handleLogoUpload}
                 clientId={initialData?.id || 'new'}
               />
             </div>
@@ -142,22 +182,20 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
                 required
               />
             </div>
-            {!initialData && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="password" className="text-right">
-                  Senha
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="col-span-3"
-                  required
-                  placeholder="Digite a senha do cliente"
-                />
-              </div>
-            )}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="password" className="text-right">
+                Senha
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="col-span-3"
+                placeholder={initialData ? "Deixe em branco para manter atual" : "Digite a senha do cliente"}
+                {...(!initialData && { required: true })}
+              />
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="instagram-id" className="text-right">
                 Instagram ID
@@ -167,7 +205,6 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
                 value={instagramId}
                 onChange={(e) => setInstagramId(e.target.value)}
                 className="col-span-3"
-                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -179,7 +216,6 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
                 value={instagramToken}
                 onChange={(e) => setInstagramToken(e.target.value)}
                 className="col-span-3"
-                required
               />
             </div>
           </div>

@@ -17,7 +17,7 @@ export async function login(
   role: 'cliente' | 'admin'
 ) {
   if (role === 'admin') {
-    // NOVO: compara senha em texto puro (sem hash/bcrypt)
+    // Admin usa senha em texto puro (sem hash/bcrypt)
     const { data, error } = await supabase
       .from('administradores')
       .select('id')
@@ -25,9 +25,10 @@ export async function login(
       .eq('senha', senha)
       .single()
 
-    if (error || !data) throw new Error('E‑mail ou senha inválidos')
+    if (error || !data) throw new Error('E‑mail ou senha incorretos')
     localStorage.setItem('user_id', data.id)
     localStorage.setItem('role', role)
+    return { role: 'admin', id: data.id }
   } else {
     // Cliente (continua como antes, usando bcrypt)
     const { data, error } = await supabase
@@ -41,5 +42,6 @@ export async function login(
     if (!ok) throw new Error('Senha incorreta')
     localStorage.setItem('user_id', data.id)
     localStorage.setItem('role', role)
+    return { role: 'cliente', id: data.id }
   }
 }

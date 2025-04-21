@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,36 +9,30 @@ import { Label } from "@/components/ui/label";
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, User } from 'lucide-react';
+
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('client'); // Default to client login
-  const {
-    login
-  } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await login(email, password);
-
+      const role = activeTab === 'admin' ? 'admin' : 'cliente';
+      const response = await login(email, password, role);
+      
       // Redirect based on user role
-      const savedUser = localStorage.getItem('user');
-      if (savedUser) {
-        const parsedUser = JSON.parse(savedUser);
-        if (parsedUser.role === 'admin') {
-          navigate('/admin');
-        } else {
-          navigate('/dashboard');
-        }
+      if (role === 'admin') {
+        navigate('/admin');
       } else {
         navigate('/dashboard');
       }
+      
       toast({
         title: "Login bem-sucedido",
         description: "Você está conectado agora."
@@ -46,13 +41,14 @@ const LoginPage: React.FC = () => {
       console.error('Login error:', error);
       toast({
         title: "Erro de login",
-        description: error.message || "Email ou senha inválidos. Tente novamente.",
+        description: error.message || "Email ou senha incorretos. Tente novamente.",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
+
   return <div className="min-h-screen flex items-center justify-center p-4 bg-slate-100">
       <div className="w-full max-w-md animate-fade-in">
         <div className="text-center mb-4">
@@ -147,4 +143,5 @@ const LoginPage: React.FC = () => {
       </div>
     </div>;
 };
+
 export default LoginPage;
