@@ -1,6 +1,3 @@
-
-// Corrigindo import do dayjs para funcionar, agora que adicionamos o pacote.
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +35,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
   const [password, setPassword] = useState('');
   const [instagramId, setInstagramId] = useState(initialData?.instagram_id || '');
   const [instagramToken, setInstagramToken] = useState(initialData?.instagram_token || '');
+  const [calendarUrl, setCalendarUrl] = useState(initialData?.calendar_url || ''); // NOVO ESTADO
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logoUrl, setLogoUrl] = useState(initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo');
 
@@ -47,6 +45,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       setEmail(initialData.email);
       setInstagramId(initialData.instagram_id);
       setInstagramToken(initialData.instagram_token);
+      setCalendarUrl(initialData.calendar_url || '');
       setPassword('');
       setLogoUrl(initialData.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo');
     } else {
@@ -55,6 +54,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       setPassword('');
       setInstagramId('');
       setInstagramToken('');
+      setCalendarUrl('');
       setLogoUrl('https://via.placeholder.com/300x150?text=Cliente+Logo');
     }
   }, [initialData]);
@@ -91,12 +91,12 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
           email: email,
           instagram_id: instagramId || null,
           token_instagram: instagramToken || null,
+          calendar_url: calendarUrl || null, // NOVO
           logo_url: logoUrl
         };
 
-        // Se senha foi fornecida, atualiza senha_hash
         if (password) {
-          updates.senha_hash = password; // Mapeia para senha_hash, não senha
+          updates.senha_hash = password;
         }
 
         const { error } = await supabase
@@ -111,16 +111,17 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
           description: "Cliente atualizado com sucesso."
         });
       } else {
-        // Adicionar novo cliente usando senha_hash (remover campo senha)
+        // Adicionar novo cliente, incluindo calendar_url
         const { error } = await supabase
           .from('clientes')
           .insert([
             {
               nome: name,
               email: email,
-              senha_hash: password, // <-- senha em texto puro, porém campo senha_hash
+              senha_hash: password,
               instagram_id: instagramId || null,
               token_instagram: instagramToken || null,
+              calendar_url: calendarUrl || null,
               logo_url: logoUrl,
               criado_em: dayjs().toISOString()
             }
@@ -133,6 +134,14 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
           description: "Cliente criado com sucesso!"
         });
       }
+      // Resetar campos após sucesso
+      setName('');
+      setEmail('');
+      setPassword('');
+      setInstagramId('');
+      setInstagramToken('');
+      setCalendarUrl('');
+      setLogoUrl('https://via.placeholder.com/300x150?text=Cliente+Logo');
 
       onSave();
     } catch (error: any) {
@@ -161,6 +170,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
+            {/* ... Logo Upload ... */}
             <div className="grid gap-4">
               <Label>Logo do Cliente</Label>
               <LogoUpload
@@ -169,7 +179,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
                 clientId={initialData?.id || 'new'}
               />
             </div>
-
+            {/* ... Nome, Email, Senha, Instagram ID, Token ... */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
                 Nome
@@ -228,6 +238,20 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
                 id="instagram-token"
                 value={instagramToken}
                 onChange={(e) => setInstagramToken(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            {/* NOVO INPUT: Calendar URL */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="calendar-url" className="text-right">
+                Calendar URL
+              </Label>
+              <Input
+                id="calendar-url"
+                type="url"
+                value={calendarUrl}
+                onChange={(e) => setCalendarUrl(e.target.value)}
+                placeholder="https://calendar.google.com/..."
                 className="col-span-3"
               />
             </div>
