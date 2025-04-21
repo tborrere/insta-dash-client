@@ -29,41 +29,35 @@ export type Database = {
       }
       clientes: {
         Row: {
-          anuncios_url: string | null
           calendar_url: string | null
           criado_em: string | null
-          drive_url: string | null
           email: string
           id: string
           instagram_id: string | null
+          logo_url: string | null
           nome: string
-          notion_url: string | null
           senha_hash: string | null
           token_instagram: string | null
         }
         Insert: {
-          anuncios_url?: string | null
           calendar_url?: string | null
           criado_em?: string | null
-          drive_url?: string | null
           email: string
           id?: string
           instagram_id?: string | null
+          logo_url?: string | null
           nome: string
-          notion_url?: string | null
           senha_hash?: string | null
           token_instagram?: string | null
         }
         Update: {
-          anuncios_url?: string | null
           calendar_url?: string | null
           criado_em?: string | null
-          drive_url?: string | null
           email?: string
           id?: string
           instagram_id?: string | null
+          logo_url?: string | null
           nome?: string
-          notion_url?: string | null
           senha_hash?: string | null
           token_instagram?: string | null
         }

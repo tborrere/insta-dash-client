@@ -192,7 +192,7 @@ const ClientForm: React.FC<ClientFormProps> = ({
                   <FormLabel>Logo do Cliente</FormLabel>
                   <div className="mt-1">
                     <LogoUpload
-                      currentLogoUrl={null}
+                      currentLogoUrl={initialData?.logo_url}
                       onLogoUpload={handleLogoUpload}
                       clientId={initialData?.id || 'new'}
                     />
