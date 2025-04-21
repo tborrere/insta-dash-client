@@ -124,7 +124,7 @@ const DashboardPage: React.FC = () => {
                 </p>
               </div>
               <div className="flex gap-2">
-                {/* DRIVE Button */}
+                {/* DRIVE Link */}
                 {driveUrl ? (
                   <a
                     href={driveUrl}
@@ -146,7 +146,7 @@ const DashboardPage: React.FC = () => {
                   </div>
                 )}
                 
-                {/* NOTION Button */}
+                {/* NOTION Link */}
                 {notionUrl ? (
                   <a
                     href={notionUrl}
@@ -168,7 +168,7 @@ const DashboardPage: React.FC = () => {
                   </div>
                 )}
                 
-                {/* ANÚNCIOS Button */}
+                {/* ANÚNCIOS Link */}
                 {anunciosUrl ? (
                   <a
                     href={anunciosUrl}
@@ -273,3 +273,4 @@ const DashboardPage: React.FC = () => {
 };
 
 export default DashboardPage;
+
