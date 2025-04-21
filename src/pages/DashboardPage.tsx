@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
@@ -106,6 +105,11 @@ const DashboardPage: React.FC = () => {
   const driveUrl = clientInfo?.drive_url;
   const notionUrl = clientInfo?.notion_url;
   const anunciosUrl = clientInfo?.anuncios_url;
+
+  console.log("Client info:", clientInfo);
+  console.log("Drive URL:", driveUrl);
+  console.log("Notion URL:", notionUrl);
+  console.log("Anuncios URL:", anunciosUrl);
 
   return (
     <div className="min-h-screen bg-gray-50">

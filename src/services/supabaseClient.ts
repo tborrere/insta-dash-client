@@ -61,7 +61,7 @@ export const fetchMetricsForClient = async (clientId: string, startDate?: string
 export const fetchClientInfo = async (clientId: string) => {
   const { data, error } = await supabase
     .from('clientes')
-    .select('*')
+    .select('id, nome, email, instagram_id, token_instagram, criado_em, drive_url, notion_url, anuncios_url')
     .eq('id', clientId)
     .single();
   
@@ -76,30 +76,15 @@ export const fetchClientInfo = async (clientId: string) => {
     instagram_token: data.token_instagram || '',
     token_status: data.token_instagram ? 'valid' : 'expired',
     created_at: data.criado_em || new Date().toISOString(),
-    logo_url: data.logo_url
+    drive_url: data.drive_url,
+    notion_url: data.notion_url,
+    anuncios_url: data.anuncios_url
   } as Client;
 };
 
 export const updateClientLogo = async (clientId: string, logoUrl: string) => {
-  const { data, error } = await supabase
-    .from('clientes')
-    .update({ logo_url: logoUrl })
-    .eq('id', clientId)
-    .select()
-    .single();
-  
-  if (error) throw error;
-  
-  return {
-    id: data.id,
-    name: data.nome,
-    email: data.email,
-    instagram_id: data.instagram_id || '',
-    instagram_token: data.token_instagram || '',
-    token_status: data.token_instagram ? 'valid' : 'expired',
-    created_at: data.criado_em || new Date().toISOString(),
-    logo_url: data.logo_url
-  } as Client;
+  // Removing this function as logo_url doesn't exist in the database schema
+  throw new Error('updateClientLogo function is not supported as logo_url field does not exist');
 };
 
 // Admin functions
@@ -120,7 +105,9 @@ export const listAllClients = async () => {
     instagram_token: client.token_instagram || '',
     token_status: client.token_instagram ? 'valid' : 'expired',
     created_at: client.criado_em || new Date().toISOString(),
-    logo_url: client.logo_url
+    drive_url: client.drive_url,
+    notion_url: client.notion_url,
+    anuncios_url: client.anuncios_url
   })) as Client[];
 };
 
@@ -130,7 +117,9 @@ export const createClient = async (clientData: {
   senha: string;
   instagram_id?: string | null;
   token_instagram?: string | null;
-  logo_url?: string | null;
+  drive_url?: string | null;
+  notion_url?: string | null;
+  anuncios_url?: string | null;
 }) => {
   const { data, error } = await supabase
     .from('clientes')
@@ -148,7 +137,9 @@ export const createClient = async (clientData: {
     instagram_token: data.token_instagram || '',
     token_status: data.token_instagram ? 'valid' : 'expired',
     created_at: data.criado_em || new Date().toISOString(),
-    logo_url: data.logo_url
+    drive_url: data.drive_url,
+    notion_url: data.notion_url,
+    anuncios_url: data.anuncios_url
   } as Client;
 };
 
@@ -170,7 +161,9 @@ export const updateClient = async (clientId: string, updates: any) => {
     instagram_token: data.token_instagram || '',
     token_status: data.token_instagram ? 'valid' : 'expired',
     created_at: data.criado_em || new Date().toISOString(),
-    logo_url: data.logo_url
+    drive_url: data.drive_url,
+    notion_url: data.notion_url,
+    anuncios_url: data.anuncios_url
   } as Client;
 };
 

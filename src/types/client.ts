@@ -1,4 +1,3 @@
-
 export interface Client {
   id: string;
   name: string;
@@ -27,3 +26,16 @@ export interface DateFilter {
   startDate: Date | null;
   endDate: Date | null;
 }
+
+export type Client = {
+  id: string;
+  name: string;
+  email: string;
+  instagram_id?: string;
+  instagram_token?: string;
+  token_status?: 'valid' | 'expired' | 'pending';
+  created_at?: string;
+  drive_url?: string | null;
+  notion_url?: string | null;
+  anuncios_url?: string | null;
+};
