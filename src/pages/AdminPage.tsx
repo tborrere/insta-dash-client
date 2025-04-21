@@ -1,5 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,9 +14,16 @@ import { listAllClients } from '@/services/supabaseClient';
 import { Button } from '@/components/ui/button';
 
 const AdminPage: React.FC = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+
+  useEffect(() => {
+    if (localStorage.getItem('role') !== 'admin') {
+      navigate('/login', { replace: true });
+    }
+  }, [navigate]);
 
   // Mock clients data for development
   const mockClients: Client[] = [
