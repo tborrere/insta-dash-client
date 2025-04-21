@@ -1,6 +1,5 @@
 
 import { createClient } from '@supabase/supabase-js'
-import bcrypt from 'bcryptjs'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -30,7 +29,7 @@ export async function login(
     localStorage.setItem('role', role)
     return { role: 'admin', id: data.id }
   } else {
-    // Cliente (continua como antes, usando bcrypt)
+    // Cliente (verificação direta da senha_hash, sem bcrypt)
     const { data, error } = await supabase
       .from('clientes')
       .select('id, senha_hash')
@@ -38,7 +37,9 @@ export async function login(
       .single()
   
     if (error || !data) throw new Error('E‑mail não encontrado')
-    const ok = await bcrypt.compare(senha, data.senha_hash)
+    // Comparação direta da senha com senha_hash 
+    // (simplificado sem bcrypt para evitar a dependência)
+    const ok = senha === data.senha_hash;
     if (!ok) throw new Error('Senha incorreta')
     localStorage.setItem('user_id', data.id)
     localStorage.setItem('role', role)

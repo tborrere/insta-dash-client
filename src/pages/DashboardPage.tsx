@@ -9,7 +9,7 @@ import { DateRangePicker } from '@/components/DateRangePicker';
 import { DateRange } from 'react-day-picker';
 import { getClientById, getMetricsForClient } from '@/services/mockData';
 import { Metric } from '@/types/client';
-import { drive, notion, fileText } from 'lucide-react';
+import { HardDrive, FileText, Megaphone } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -127,13 +127,12 @@ const DashboardPage: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!driveUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
-                  disabled={!driveUrl}
                   tabIndex={driveUrl ? undefined : -1}
                   aria-disabled={!driveUrl}
-                  style={ !driveUrl ? { pointerEvents: 'none', opacity: 0.5 } : {} }
+                  style={!driveUrl ? { pointerEvents: 'none', opacity: 0.5 } : {}}
                 >
                   <span className="mr-2">
-                    {React.createElement(drive, { className: "h-5 w-5" })}
+                    <HardDrive className="h-5 w-5" />
                   </span>
                   DRIVE
                 </a>
@@ -142,13 +141,12 @@ const DashboardPage: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!notionUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
-                  disabled={!notionUrl}
                   tabIndex={notionUrl ? undefined : -1}
                   aria-disabled={!notionUrl}
-                  style={ !notionUrl ? { pointerEvents: 'none', opacity: 0.5 } : {} }
+                  style={!notionUrl ? { pointerEvents: 'none', opacity: 0.5 } : {}}
                 >
                   <span className="mr-2">
-                    {React.createElement(notion, { className: "h-5 w-5" })}
+                    <FileText className="h-5 w-5" />
                   </span>
                   NOTION
                 </a>
@@ -157,13 +155,12 @@ const DashboardPage: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!anunciosUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
-                  disabled={!anunciosUrl}
                   tabIndex={anunciosUrl ? undefined : -1}
                   aria-disabled={!anunciosUrl}
-                  style={ !anunciosUrl ? { pointerEvents: 'none', opacity: 0.5 } : {} }
+                  style={!anunciosUrl ? { pointerEvents: 'none', opacity: 0.5 } : {}}
                 >
                   <span className="mr-2">
-                    {React.createElement(fileText, { className: "h-5 w-5" })}
+                    <Megaphone className="h-5 w-5" />
                   </span>
                   ANÚNCIOS
                 </a>
