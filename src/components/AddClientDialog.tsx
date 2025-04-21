@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -12,9 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Client } from '@/types/client';
 import { useToast } from '@/components/ui/use-toast';
-import LogoUpload from './LogoUpload';
 import { supabase } from '@/lib/supabase';
-
 import dayjs from 'dayjs';
 
 interface AddClientDialogProps {
@@ -35,9 +34,11 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
   const [password, setPassword] = useState('');
   const [instagramId, setInstagramId] = useState(initialData?.instagram_id || '');
   const [instagramToken, setInstagramToken] = useState(initialData?.instagram_token || '');
-  const [calendarUrl, setCalendarUrl] = useState(initialData?.calendar_url || ''); // NOVO ESTADO
+  const [calendarUrl, setCalendarUrl] = useState((initialData as any)?.calendar_url || '');
+  const [driveUrl, setDriveUrl] = useState((initialData as any)?.drive_url || '');
+  const [notionUrl, setNotionUrl] = useState((initialData as any)?.notion_url || '');
+  const [anunciosUrl, setAnunciosUrl] = useState((initialData as any)?.anuncios_url || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [logoUrl, setLogoUrl] = useState(initialData?.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo');
 
   useEffect(() => {
     if (initialData) {
@@ -45,9 +46,11 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       setEmail(initialData.email);
       setInstagramId(initialData.instagram_id);
       setInstagramToken(initialData.instagram_token);
-      setCalendarUrl(initialData.calendar_url || '');
+      setCalendarUrl((initialData as any)?.calendar_url || '');
+      setDriveUrl((initialData as any)?.drive_url || '');
+      setNotionUrl((initialData as any)?.notion_url || '');
+      setAnunciosUrl((initialData as any)?.anuncios_url || '');
       setPassword('');
-      setLogoUrl(initialData.logo_url || 'https://via.placeholder.com/300x150?text=Cliente+Logo');
     } else {
       setName('');
       setEmail('');
@@ -55,19 +58,13 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       setInstagramId('');
       setInstagramToken('');
       setCalendarUrl('');
-      setLogoUrl('https://via.placeholder.com/300x150?text=Cliente+Logo');
+      setDriveUrl('');
+      setNotionUrl('');
+      setAnunciosUrl('');
     }
   }, [initialData]);
   
   const { toast } = useToast();
-
-  // Corrigir o handler de logo para aceitar File, mas transformar em URL
-  const handleLogoUpload = async (file: File) => {
-    // Se já recebe uma URL da LogoUpload, basta setar; se não, faça o upload aqui
-    // Aqui estamos supondo que o componente já produz uma URL:
-    const url = typeof file === "string" ? file : '';
-    setLogoUrl(url);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,14 +88,14 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
           email: email,
           instagram_id: instagramId || null,
           token_instagram: instagramToken || null,
-          calendar_url: calendarUrl || null, // NOVO
-          logo_url: logoUrl
+          calendar_url: calendarUrl || null,
+          drive_url: driveUrl || null,
+          notion_url: notionUrl || null,
+          anuncios_url: anunciosUrl || null
         };
-
         if (password) {
           updates.senha_hash = password;
         }
-
         const { error } = await supabase
           .from('clientes')
           .update(updates)
@@ -111,7 +108,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
           description: "Cliente atualizado com sucesso."
         });
       } else {
-        // Adicionar novo cliente, incluindo calendar_url
+        // Adicionar novo cliente
         const { error } = await supabase
           .from('clientes')
           .insert([
@@ -122,7 +119,9 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
               instagram_id: instagramId || null,
               token_instagram: instagramToken || null,
               calendar_url: calendarUrl || null,
-              logo_url: logoUrl,
+              drive_url: driveUrl || null,
+              notion_url: notionUrl || null,
+              anuncios_url: anunciosUrl || null,
               criado_em: dayjs().toISOString()
             }
           ]);
@@ -134,6 +133,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
           description: "Cliente criado com sucesso!"
         });
       }
+
       // Resetar campos após sucesso
       setName('');
       setEmail('');
@@ -141,7 +141,9 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       setInstagramId('');
       setInstagramToken('');
       setCalendarUrl('');
-      setLogoUrl('https://via.placeholder.com/300x150?text=Cliente+Logo');
+      setDriveUrl('');
+      setNotionUrl('');
+      setAnunciosUrl('');
 
       onSave();
     } catch (error: any) {
@@ -170,16 +172,6 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-            {/* ... Logo Upload ... */}
-            <div className="grid gap-4">
-              <Label>Logo do Cliente</Label>
-              <LogoUpload
-                currentLogoUrl={logoUrl}
-                onLogoUpload={handleLogoUpload}
-                clientId={initialData?.id || 'new'}
-              />
-            </div>
-            {/* ... Nome, Email, Senha, Instagram ID, Token ... */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
                 Nome
@@ -188,7 +180,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="col-span-3"
+                className="col-span-3 font-bold text-lg"
                 required
               />
             </div>
@@ -241,7 +233,6 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
                 className="col-span-3"
               />
             </div>
-            {/* NOVO INPUT: Calendar URL */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="calendar-url" className="text-right">
                 Calendar URL
@@ -252,6 +243,45 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
                 value={calendarUrl}
                 onChange={(e) => setCalendarUrl(e.target.value)}
                 placeholder="https://calendar.google.com/..."
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="drive-url" className="text-right">
+                Drive URL
+              </Label>
+              <Input
+                id="drive-url"
+                type="url"
+                value={driveUrl}
+                onChange={(e) => setDriveUrl(e.target.value)}
+                placeholder="https://drive.google.com/..."
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="notion-url" className="text-right">
+                Notion URL
+              </Label>
+              <Input
+                id="notion-url"
+                type="url"
+                value={notionUrl}
+                onChange={(e) => setNotionUrl(e.target.value)}
+                placeholder="https://notion.so/..."
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="anuncios-url" className="text-right">
+                Anúncios URL
+              </Label>
+              <Input
+                id="anuncios-url"
+                type="url"
+                value={anunciosUrl}
+                onChange={(e) => setAnunciosUrl(e.target.value)}
+                placeholder="https://..."
                 className="col-span-3"
               />
             </div>
