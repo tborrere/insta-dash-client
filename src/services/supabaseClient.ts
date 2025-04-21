@@ -64,10 +64,9 @@ export const fetchClientInfo = async (clientId: string) => {
     .select('id, nome, email, instagram_id, token_instagram, criado_em, drive_url, notion_url, anuncios_url')
     .eq('id', clientId)
     .single();
-  
+
   if (error) throw error;
-  
-  // Mapeando para o formato esperado pelo frontend
+
   return {
     id: data.id,
     name: data.nome,
@@ -78,8 +77,8 @@ export const fetchClientInfo = async (clientId: string) => {
     created_at: data.criado_em || new Date().toISOString(),
     drive_url: data.drive_url,
     notion_url: data.notion_url,
-    anuncios_url: data.anuncios_url
-  } as Client;
+    anuncios_url: data.anuncios_url,
+  };
 };
 
 export const updateClientLogo = async (clientId: string, logoUrl: string) => {
