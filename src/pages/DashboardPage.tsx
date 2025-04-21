@@ -22,16 +22,13 @@ const DashboardPage: React.FC = () => {
     const fetchData = async () => {
       try {
         if (user?.clientId) {
-          // Fetch client info from Supabase
           const client = await fetchClientInfo(user.clientId);
           setClientInfo(client);
           
-          // Fetch metrics from Supabase
           const clientMetrics = await fetchMetricsForClient(user.clientId);
           setMetrics(clientMetrics);
           setFilteredMetrics(clientMetrics);
         } else if (user?.role === 'admin') {
-          // For admin users, show a default client's data
           const client = await fetchClientInfo('client1');
           setClientInfo(client);
           
@@ -130,9 +127,7 @@ const DashboardPage: React.FC = () => {
                   href={driveUrl || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!driveUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
-                  tabIndex={driveUrl ? undefined : -1}
-                  aria-disabled={!driveUrl}
+                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 ${driveUrl ? 'bg-white hover:bg-gray-100 hover:text-blue-900 text-gray-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                   onClick={!driveUrl ? (e) => e.preventDefault() : undefined}
                 >
                   <span className="mr-2">
@@ -145,9 +140,7 @@ const DashboardPage: React.FC = () => {
                   href={notionUrl || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!notionUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
-                  tabIndex={notionUrl ? undefined : -1}
-                  aria-disabled={!notionUrl}
+                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 ${notionUrl ? 'bg-white hover:bg-gray-100 hover:text-blue-900 text-gray-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                   onClick={!notionUrl ? (e) => e.preventDefault() : undefined}
                 >
                   <span className="mr-2">
@@ -160,9 +153,7 @@ const DashboardPage: React.FC = () => {
                   href={anunciosUrl || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!anunciosUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
-                  tabIndex={anunciosUrl ? undefined : -1}
-                  aria-disabled={!anunciosUrl}
+                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 ${anunciosUrl ? 'bg-white hover:bg-gray-100 hover:text-blue-900 text-gray-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                   onClick={!anunciosUrl ? (e) => e.preventDefault() : undefined}
                 >
                   <span className="mr-2">
