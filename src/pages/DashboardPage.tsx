@@ -9,24 +9,26 @@ import { DateRange } from 'react-day-picker';
 import { getClientById, getMetricsForClient } from '@/services/mockData';
 import { Metric } from '@/types/client';
 import { Instagram, TrendingUp, Eye, Heart, MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [filteredMetrics, setFilteredMetrics] = useState<Metric[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdatingMetrics, setIsUpdatingMetrics] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (user?.clientId) {
-          // For client users, fetch their own data
           const clientMetrics = getMetricsForClient(user.clientId);
           setMetrics(clientMetrics);
           setFilteredMetrics(clientMetrics);
         } else if (user?.role === 'admin') {
-          // For admin users, fetch a default client (for demo)
           const clientMetrics = getMetricsForClient('client1');
           setMetrics(clientMetrics);
           setFilteredMetrics(clientMetrics);
@@ -41,7 +43,6 @@ const DashboardPage: React.FC = () => {
     fetchData();
   }, [user]);
 
-  // Filter metrics when date range changes
   useEffect(() => {
     if (!dateRange?.from) {
       setFilteredMetrics(metrics);
@@ -51,14 +52,11 @@ const DashboardPage: React.FC = () => {
     const filtered = metrics.filter(metric => {
       const metricDate = new Date(metric.date);
       
-      // If only start date is selected
       if (dateRange.from && !dateRange.to) {
         return metricDate >= dateRange.from;
       }
       
-      // If both dates are selected
       if (dateRange.from && dateRange.to) {
-        // Add one day to end date to include the end date in the range
         const endDate = new Date(dateRange.to);
         endDate.setDate(endDate.getDate() + 1);
         return metricDate >= dateRange.from && metricDate < endDate;
@@ -70,15 +68,12 @@ const DashboardPage: React.FC = () => {
     setFilteredMetrics(filtered);
   }, [dateRange, metrics]);
 
-  // Get the latest metrics data
   const latestMetrics = filteredMetrics.length > 0 ? filteredMetrics[filteredMetrics.length - 1] : null;
   
-  // Calculate growth trends (for demonstration)
   const calculateTrend = (current: number, previous: number): number => {
     return previous ? Math.round(((current - previous) / previous) * 100) : 0;
   };
 
-  // Get trends by comparing the latest data with data from a week ago
   const trendIndex = filteredMetrics.length > 7 ? filteredMetrics.length - 8 : 0;
   const previousMetrics = filteredMetrics[trendIndex];
   
@@ -88,6 +83,43 @@ const DashboardPage: React.FC = () => {
     likes: calculateTrend(latestMetrics.likes, previousMetrics.likes),
     comments: calculateTrend(latestMetrics.comments, previousMetrics.comments),
   } : null;
+
+  const handleUpdateMetrics = async () => {
+    setIsUpdatingMetrics(true);
+    
+    try {
+      const response = await fetch('/api/coletar-metricas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: 'EAAMNP47IjXoBO3ubkCd4EIncAMLujxvfl03qEEh9FWklDAqXGH01R2rbeFCby5vxrx3gdeRS5UWMnh1GO3a5zoZBBCGnPmtCWbW1amh8QXusrZB3Vn2ZBZACaQMZAoleIwC6lHsY1gizE3j38dirCeDcyh4qcaZA5ZAXRjpekxU2nQW5dSZB8d30YVmNhIkpEnqm4eXcpo73DXxSYSlNXFdLMpVSM6cZD',
+          instagramId: '17841400177002253',
+          clienteId: '36f76037-3629-4951-8bd3-64b4714ffdcb'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao atualizar métricas');
+      }
+
+      toast({
+        title: "✅ Métricas atualizadas com sucesso!",
+        duration: 3000,
+      });
+
+    } catch (error) {
+      console.error('Erro ao atualizar métricas:', error);
+      toast({
+        variant: "destructive",
+        title: "❌ Erro ao coletar métricas",
+        duration: 3000,
+      });
+    } finally {
+      setIsUpdatingMetrics(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -120,13 +152,18 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Google Calendar Integration */}
         <CalendarEmbed 
           calendarUrl="https://calendar.google.com/calendar/embed?src=tborrere%40gmail.com&ctz=America%2FSao_Paulo" 
         />
 
-        {/* Date Range Picker - Now placed below the calendar */}
-        <div className="mb-8 flex justify-end">
+        <div className="mb-8 flex justify-end items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={handleUpdateMetrics}
+            disabled={isUpdatingMetrics}
+          >
+            {isUpdatingMetrics ? "Coletando métricas..." : "Atualizar métricas agora"}
+          </Button>
           <DateRangePicker 
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
@@ -134,7 +171,6 @@ const DashboardPage: React.FC = () => {
           />
         </div>
 
-        {/* Overview cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <MetricCard
             title="Alcance"
@@ -165,7 +201,6 @@ const DashboardPage: React.FC = () => {
           />
         </div>
 
-        {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <MetricChart 
             title="Crescimento de Seguidores" 
