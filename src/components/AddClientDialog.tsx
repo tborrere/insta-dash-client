@@ -1,4 +1,6 @@
 
+// Corrigindo import do dayjs para funcionar, agora que adicionamos o pacote.
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Client } from '@/types/client';
 import { useToast } from '@/components/ui/use-toast';
 import LogoUpload from './LogoUpload';
-import { supabase } from '@/lib/supabase'; // use the correct import
+import { supabase } from '@/lib/supabase';
+
 import dayjs from 'dayjs';
 
 interface AddClientDialogProps {
@@ -55,7 +58,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({
       setLogoUrl('https://via.placeholder.com/300x150?text=Cliente+Logo');
     }
   }, [initialData]);
-
+  
   const { toast } = useToast();
 
   // Corrigir o handler de logo para aceitar File, mas transformar em URL

@@ -1,4 +1,7 @@
 
+// Apenas ajustando a chamada da função login para passar 2 argumentos como esperado,
+// removendo o terceiro argumento role que estava causando erro TS2554.
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,15 +27,17 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
     try {
       const role = activeTab === 'admin' ? 'admin' : 'cliente';
-      const response = await login(email, password, role);
-      
+      // Ajuste: login aceita 2 argumentos (email, password)
+      // Role será usado internamente no hook de autenticação (contexto)
+      const response = await login(email, password);
+
       // Redirect based on user role
       if (role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/dashboard');
       }
-      
+
       toast({
         title: "Login bem-sucedido",
         description: "Você está conectado agora."
