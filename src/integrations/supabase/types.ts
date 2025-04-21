@@ -9,24 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      administradores: {
-        Row: {
-          email: string
-          id: string
-          senha_hash: string | null
-        }
-        Insert: {
-          email: string
-          id?: string
-          senha_hash?: string | null
-        }
-        Update: {
-          email?: string
-          id?: string
-          senha_hash?: string | null
-        }
-        Relationships: []
-      }
       clientes: {
         Row: {
           calendar_url: string | null
