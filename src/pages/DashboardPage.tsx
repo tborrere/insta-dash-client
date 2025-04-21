@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
@@ -8,7 +9,7 @@ import { DateRangePicker } from '@/components/DateRangePicker';
 import { DateRange } from 'react-day-picker';
 import { getClientById, getMetricsForClient } from '@/services/mockData';
 import { Metric } from '@/types/client';
-import { Instagram, TrendingUp, Eye, Heart, MessageCircle } from 'lucide-react';
+import { drive, notion, fileText } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -102,6 +103,9 @@ const DashboardPage: React.FC = () => {
 
   const clientInfo = user?.clientId ? getClientById(user.clientId) : null;
   const displayName = clientInfo?.name || user?.name || '';
+  const driveUrl = (clientInfo as any)?.drive_url;
+  const notionUrl = (clientInfo as any)?.notion_url;
+  const anunciosUrl = (clientInfo as any)?.anuncios_url;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -110,12 +114,60 @@ const DashboardPage: React.FC = () => {
       <main className="container mx-auto py-6 px-4">
         <div className="mb-8">
           <div className="flex flex-col space-y-4">
-            <div>
-              <h1 className="text-2xl font-bold text-primary">Dashboard de Métricas</h1>
-              <p className="text-secondary">
-                Bem-vindo, <span className="font-medium">{displayName}</span>! 
-                Confira abaixo as métricas de desempenho da sua conta.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-primary">{displayName}</h1>
+                <p className="text-secondary text-base mt-1">
+                  Bem-vindo, <span className="font-bold">{displayName}</span>! Confira abaixo as métricas de desempenho da sua conta.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <a
+                  href={driveUrl || undefined}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!driveUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
+                  disabled={!driveUrl}
+                  tabIndex={driveUrl ? undefined : -1}
+                  aria-disabled={!driveUrl}
+                  style={ !driveUrl ? { pointerEvents: 'none', opacity: 0.5 } : {} }
+                >
+                  <span className="mr-2">
+                    {React.createElement(drive, { className: "h-5 w-5" })}
+                  </span>
+                  DRIVE
+                </a>
+                <a
+                  href={notionUrl || undefined}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!notionUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
+                  disabled={!notionUrl}
+                  tabIndex={notionUrl ? undefined : -1}
+                  aria-disabled={!notionUrl}
+                  style={ !notionUrl ? { pointerEvents: 'none', opacity: 0.5 } : {} }
+                >
+                  <span className="mr-2">
+                    {React.createElement(notion, { className: "h-5 w-5" })}
+                  </span>
+                  NOTION
+                </a>
+                <a
+                  href={anunciosUrl || undefined}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 text-gray-700 ${!anunciosUrl ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100 hover:text-blue-900'}`}
+                  disabled={!anunciosUrl}
+                  tabIndex={anunciosUrl ? undefined : -1}
+                  aria-disabled={!anunciosUrl}
+                  style={ !anunciosUrl ? { pointerEvents: 'none', opacity: 0.5 } : {} }
+                >
+                  <span className="mr-2">
+                    {React.createElement(fileText, { className: "h-5 w-5" })}
+                  </span>
+                  ANÚNCIOS
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -139,28 +191,28 @@ const DashboardPage: React.FC = () => {
           <MetricCard
             title="Alcance"
             value={latestMetrics?.reach.toLocaleString() || "0"}
-            icon={<Eye className="h-4 w-4 text-accent" />}
+            icon={<span />}
             trend={trends ? { value: trends.reach, isPositive: trends.reach >= 0 } : undefined}
           />
           
           <MetricCard
             title="Impressões"
             value={latestMetrics?.impressions.toLocaleString() || "0"}
-            icon={<TrendingUp className="h-4 w-4 text-accent" />}
+            icon={<span />}
             trend={trends ? { value: trends.impressions, isPositive: trends.impressions >= 0 } : undefined}
           />
           
           <MetricCard
             title="Curtidas"
             value={latestMetrics?.likes.toLocaleString() || "0"}
-            icon={<Heart className="h-4 w-4 text-accent" />}
+            icon={<span />}
             trend={trends ? { value: trends.likes, isPositive: trends.likes >= 0 } : undefined}
           />
           
           <MetricCard
             title="Comentários"
             value={latestMetrics?.comments.toLocaleString() || "0"}
-            icon={<MessageCircle className="h-4 w-4 text-accent" />}
+            icon={<span />}
             trend={trends ? { value: trends.comments, isPositive: trends.comments >= 0 } : undefined}
           />
         </div>
