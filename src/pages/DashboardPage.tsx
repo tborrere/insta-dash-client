@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
@@ -123,44 +124,71 @@ const DashboardPage: React.FC = () => {
                 </p>
               </div>
               <div className="flex gap-2">
-                <a
-                  href={driveUrl || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 ${driveUrl ? 'bg-white hover:bg-gray-100 hover:text-blue-900 text-gray-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                  onClick={!driveUrl ? (e) => e.preventDefault() : undefined}
-                >
-                  <span className="mr-2">
-                    <HardDrive className="h-5 w-5" />
-                  </span>
-                  DRIVE
-                </a>
+                {/* DRIVE Button */}
+                {driveUrl ? (
+                  <a
+                    href={driveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center px-4 py-2 border rounded transition-colors duration-150 bg-white hover:bg-gray-100 hover:text-blue-900 text-gray-700"
+                  >
+                    <span className="mr-2">
+                      <HardDrive className="h-5 w-5" />
+                    </span>
+                    DRIVE
+                  </a>
+                ) : (
+                  <div className="flex items-center px-4 py-2 border rounded bg-gray-200 text-gray-400 cursor-not-allowed">
+                    <span className="mr-2">
+                      <HardDrive className="h-5 w-5" />
+                    </span>
+                    DRIVE
+                  </div>
+                )}
                 
-                <a
-                  href={notionUrl || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 ${notionUrl ? 'bg-white hover:bg-gray-100 hover:text-blue-900 text-gray-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                  onClick={!notionUrl ? (e) => e.preventDefault() : undefined}
-                >
-                  <span className="mr-2">
-                    <FileText className="h-5 w-5" />
-                  </span>
-                  NOTION
-                </a>
+                {/* NOTION Button */}
+                {notionUrl ? (
+                  <a
+                    href={notionUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center px-4 py-2 border rounded transition-colors duration-150 bg-white hover:bg-gray-100 hover:text-blue-900 text-gray-700"
+                  >
+                    <span className="mr-2">
+                      <FileText className="h-5 w-5" />
+                    </span>
+                    NOTION
+                  </a>
+                ) : (
+                  <div className="flex items-center px-4 py-2 border rounded bg-gray-200 text-gray-400 cursor-not-allowed">
+                    <span className="mr-2">
+                      <FileText className="h-5 w-5" />
+                    </span>
+                    NOTION
+                  </div>
+                )}
                 
-                <a
-                  href={anunciosUrl || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex items-center px-4 py-2 border rounded transition-colors duration-150 ${anunciosUrl ? 'bg-white hover:bg-gray-100 hover:text-blue-900 text-gray-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                  onClick={!anunciosUrl ? (e) => e.preventDefault() : undefined}
-                >
-                  <span className="mr-2">
-                    <Megaphone className="h-5 w-5" />
-                  </span>
-                  ANÚNCIOS
-                </a>
+                {/* ANÚNCIOS Button */}
+                {anunciosUrl ? (
+                  <a
+                    href={anunciosUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center px-4 py-2 border rounded transition-colors duration-150 bg-white hover:bg-gray-100 hover:text-blue-900 text-gray-700"
+                  >
+                    <span className="mr-2">
+                      <Megaphone className="h-5 w-5" />
+                    </span>
+                    ANÚNCIOS
+                  </a>
+                ) : (
+                  <div className="flex items-center px-4 py-2 border rounded bg-gray-200 text-gray-400 cursor-not-allowed">
+                    <span className="mr-2">
+                      <Megaphone className="h-5 w-5" />
+                    </span>
+                    ANÚNCIOS
+                  </div>
+                )}
               </div>
             </div>
           </div>
