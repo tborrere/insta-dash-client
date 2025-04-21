@@ -23,25 +23,31 @@ const Header: React.FC = () => {
     navigate('/login');
   };
 
-  // Obtém nome do cliente se existir
   const clientInfo = user?.clientId ? getClientById(user.clientId) : null;
-  const clientName = clientInfo?.name;
+  const clientLogo = clientInfo?.logo_url;
 
   return (
     <header className="bg-white border-b border-gray-200 py-3 px-4 sm:px-6 flex justify-between items-center sticky top-0 z-10 shadow-sm">
       <div className="flex items-center gap-4">
-        {/* Logo Funil Lab centralizado */}
+        {/* Logo da Funil Lab para todos os usuários */}
         <img 
           src="/lovable-uploads/b1145979-e0b0-4c99-bfa2-760a739b778f.png" 
           alt="Funil Lab" 
           className="h-12 object-contain"
         />
-        {user?.role === 'client' && (
-          <span className="ml-4 font-bold text-xl text-funillab-blue">
-            {clientName}
-          </span>
+        
+        {/* Logo do cliente (se existir e o usuário for um cliente) */}
+        {user?.role === 'client' && clientLogo && (
+          <div className="h-10 border-l border-gray-300 pl-4 flex items-center">
+            <img 
+              src={clientLogo} 
+              alt={`${clientInfo?.name} Logo`}
+              className="h-full object-contain"
+            />
+          </div>
         )}
-        {isAdmin() && (
+        
+        {!clientLogo && !isAdmin() && (
           <h1 className="text-xl font-semibold text-funillab-blue ml-2">Métricas do Instagram</h1>
         )}
       </div>

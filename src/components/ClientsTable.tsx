@@ -55,13 +55,17 @@ const ClientsTable: React.FC<ClientsTableProps> = ({
   };
 
   const handleCopyCredentials = (client: Client) => {
+    // Em uma aplicação real, você recuperaria a senha do cliente
+    // para um caso de demonstração, usaremos uma senha fixa
     const text = `
       Acesse seu painel da Funil Lab:
       Site: https://metrics.funillab.com
       Email: ${client.email}
       Senha: password123
     `;
+    
     navigator.clipboard.writeText(text);
+    
     toast({
       title: "Credenciais copiadas",
       description: "As credenciais de acesso foram copiadas para a área de transferência.",
@@ -85,7 +89,16 @@ const ClientsTable: React.FC<ClientsTableProps> = ({
         {clients.map((client) => (
           <TableRow key={client.id}>
             <TableCell className="font-medium">
-              <span className="font-bold text-lg">{client.name}</span>
+              <div className="flex items-center gap-2">
+                {client.logo_url && (
+                  <img 
+                    src={client.logo_url} 
+                    alt={client.name} 
+                    className="h-8 w-8 object-contain rounded-sm"
+                  />
+                )}
+                <span>{client.name}</span>
+              </div>
             </TableCell>
             <TableCell>{client.email}</TableCell>
             <TableCell>{client.instagram_id}</TableCell>
